@@ -26,7 +26,7 @@ header{display:flex;align-items:center;justify-content:space-between;height:44px
 .logo{display:flex;align-items:center;gap:9px;font-weight:800;font-size:17px;letter-spacing:.02em}
 .logo i{width:26px;height:18px;border-radius:5px;border:2.5px solid var(--fg);position:relative;display:block}
 .logo i:after{content:"";position:absolute;inset:3px 4px;background:var(--fg);border-radius:2px}
-#mst{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--mut);font-weight:600}
+#mst{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--mut);font-weight:600}
 #mst b{width:7px;height:7px;border-radius:50%;background:var(--mut);display:block}
 #mst.on b{background:var(--ok);box-shadow:0 0 0 3px color-mix(in srgb,var(--ok) 25%,transparent)}
 #mst.ld b{background:var(--warn)}
@@ -154,6 +154,12 @@ body.dz #dropz{display:flex}
 body.short #steps{display:none}body.short header{height:36px}body.short main{padding-top:6px}
 .about{margin-top:12px;font-size:11px;line-height:1.8;color:var(--mut)}.about a{color:var(--ac);font-weight:700}
 #pick{display:none}
+#mload{position:relative;display:flex;align-items:center;gap:8px;padding:8px 14px 11px;border-radius:999px;background:var(--card);box-shadow:var(--sh);font-size:12px;font-weight:700;color:var(--mut);line-height:1}
+#mload i{width:12px;height:12px;border:2px solid var(--mut);border-right-color:transparent;border-radius:50%;animation:spin .8s linear infinite;flex:none}
+#mload em{position:absolute;left:14px;right:14px;bottom:4px;height:2px;border-radius:2px;background:var(--line);overflow:hidden}#mload u{display:block;height:100%;width:0;background:var(--fg);transition:width .3s}
+#busy{position:absolute;left:50%;top:10px;transform:translateX(-50%);z-index:3;display:flex;align-items:center;gap:9px;padding:10px 16px 12px;border-radius:999px;background:rgba(20,20,24,.8);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:#fff;font-size:13px;font-weight:700;line-height:1;white-space:nowrap;pointer-events:none;zoom:var(--uz,1);box-shadow:0 4px 18px rgba(0,0,0,.3)}
+#busy i{width:14px;height:14px;border:2.2px solid #fff;border-right-color:transparent;border-radius:50%;animation:spin .8s linear infinite;flex:none}
+#busy em{position:absolute;left:16px;right:16px;bottom:5px;height:2px;border-radius:2px;background:rgba(255,255,255,.22);overflow:hidden}#busy u{display:block;height:100%;width:0;background:#fff;transition:width .3s}
 #dock{width:100%;max-width:620px;margin:0 auto}#dock:empty{display:none}
 #dock #tools{margin-top:0}#dock .tl{min-height:48px;gap:2px;font-size:11px;border-radius:14px}#dock .tl svg{width:20px;height:20px}
 #dock .panel{margin:0 0 8px;max-height:min(28vh,240px);overflow:auto;overscroll-behavior:contain}
@@ -163,7 +169,7 @@ body:not(.wide) #vw{padding-bottom:50px}body:not(.wide) #th{padding-bottom:8px}b
 
 </style></head><body>
 <main>
-<header><div class="logo"><i></i>NumberOFF</div><div class="hr"><div id="mst" title=""><b></b><span>自動検出</span></div><button id="help" aria-label="使い方">?</button></div></header>
+<header><div class="logo"><i></i>NumberOFF</div><div class="hr"><button id="help" aria-label="使い方">?</button></div></header>
 <div id="steps"><div class="st on" id="s1">選ぶ</div><div class="st" id="s2">隠す</div><div class="st" id="s3">保存</div></div>
 
 <div id="empty">
@@ -174,13 +180,14 @@ body:not(.wide) #vw{padding-bottom:50px}body:not(.wide) #th{padding-bottom:8px}b
   <div class="cta"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>写真を選ぶ</div>
  </label>
  <button class="link" id="demoBtn">サンプルで試す</button>
+ <div id="mload"><i></i><span>自動検出を準備中…</span><em><u></u></em></div>
 </div>
 
 <div id="work" hidden>
  <div id="th"></div>
  <div id="vw"><div id="cw"><canvas id="cv"></canvas>
   <div id="delb" hidden><span id="delq" hidden>削除しますか？</span><button id="decb" class="d"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>決定</button><button id="dely"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4.5h6V7M6.5 7l1 12.5h9l1-12.5"/></svg></button><button id="deln" hidden>戻る</button></div>
-  <canvas id="ov"></canvas></div><button id="undo" aria-label="元に戻す" hidden><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button><button id="redo" aria-label="やり直す" hidden><svg style="transform:scaleX(-1)" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button><div id="zc"><button id="cmp" aria-label="加工前を表示（押している間）"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button><button id="zm" aria-label="縮小"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/></svg></button><span id="zl">100%</span><button id="zp" aria-label="拡大"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button><button id="zh">画像移動</button></div>
+  <canvas id="ov"></canvas><div id="busy" hidden><i></i><span>ナンバーを検出中…</span><em><u></u></em></div></div><button id="undo" aria-label="元に戻す" hidden><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button><button id="redo" aria-label="やり直す" hidden><svg style="transform:scaleX(-1)" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button><div id="zc"><button id="cmp" aria-label="加工前を表示（押している間）"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button><button id="zm" aria-label="縮小"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/></svg></button><span id="zl">100%</span><button id="zp" aria-label="拡大"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button><button id="zh">画像移動</button></div>
  </div>
  <div id="hint"><b></b><span></span></div>
  <div id="tools">
@@ -214,7 +221,7 @@ body:not(.wide) #vw{padding-bottom:50px}body:not(.wide) #th{padding-bottom:8px}b
   <div class="gap"></div>
   <div class="lab">ご利用について</div>
   <ol class="terms"><li>画像はすべてお使いの端末内で処理され、外部のサーバーへ送信・保存されることはありません。</li><li>ナンバーの検出は自動処理のため、隠し漏れが生じる場合があります。公開・共有の前に必ずご自身で確認してください。</li><li>本アプリの利用により生じたいかなる損害についても、開発者は責任を負いません。</li></ol>
-  <div class="about">NumberOFF <span id="ver">v1.1.0</span> ・ <a href="https://github.com/https://github.com/hotaru-works/numberoff/numberoff" target="_blank" rel="noopener">ソースコード</a> ・ AGPL-3.0<br>検出モデル: YOLO11（AGPL-3.0）／推論: ONNX Runtime Web（MIT）</div>
+  <div class="about">NumberOFF <span id="ver">v1.1.0</span> ・ <a href="https://github.com/https://hotaru-works/numberoff" target="_blank" rel="noopener">ソースコード</a> ・ AGPL-3.0<br>検出モデル: YOLO11（AGPL-3.0）／推論: ONNX Runtime Web（MIT）<br><span id="mst" title=""><b></b><span>自動検出：準備中</span></span></div>
  </div>
 </div>
 </main>
@@ -236,30 +243,56 @@ function col(g,x,y,w,h,adj){
  if($('#pure').checked||w<2||h<2)return'#fff';
  const d=g.getImageData(x,y,w,h).data,L=[];
  for(let i=0;i<d.length;i+=16)L.push(.299*d[i]+.587*d[i+1]+.114*d[i+2]);
- L.sort((a,b)=>a-b);const hi=L.slice(L.length>>1),m=hi[hi.length>>1]||255;
- const v=Math.round(Math.min(255,Math.max(16,m+adj)));
- return`rgb(${v},${v},${Math.max(0,v-6)})`}
+ const S=L.slice().sort((a,b)=>a-b),hi=S.slice(S.length>>1),m=hi[hi.length>>1]||255,t3=S[Math.floor(S.length*.75)]||0;
+ const v=Math.min(255,Math.max(16,m+adj));let R=0,G=0,B=0,n=0;
+ for(let k=0,i=0;i<d.length;i+=16,k++)if(L[k]>=t3){R+=d[i];G+=d[i+1];B+=d[i+2];n++}
+ const lm=n?(.299*R+.587*G+.114*B)/n:0,cl=c=>Math.min(1.08,Math.max(.92,c)),cr=lm>20?cl(R/n/lm):1,cg=lm>20?cl(G/n/lm):1,cb=lm>20?cl(B/n/lm):.976;
+ const f=c=>Math.round(Math.min(255,v*c));return`rgb(${f(cr)},${f(cg)},${f(cb)})`}
 const rq=(x,y,w,h)=>({q:[[x,y],[x+w,y],[x+w,y+h],[x,y+h]]});
 function bbq(q){const xs=q.map(p=>p[0]),ys=q.map(p=>p[1]),x=Math.min(...xs),y=Math.min(...ys);return{x,y,w:Math.max(...xs)-x,h:Math.max(...ys)-y}}
 function inPoly(q,p){let c=false;for(let i=0,j=3;i<4;j=i++){const[a,b]=q[i],[e,f]=q[j];if((b>p[1])!=(f>p[1])&&p[0]<(e-a)*(p[1]-b)/(f-b)+a)c=!c}return c}
-function paint(it,c,s,soft=-1){
- const W=Math.round(it.bmp.width*s),H=Math.round(it.bmp.height*s);
- c.width=W;c.height=H;const g=c.getContext('2d',{willReadFrequently:true});
- g.drawImage(it.bmp,0,0,W,H);
- const qs=it.boxes.map(b=>b.q.map(([x,y])=>[x*s,y*s]));
- const cs=qs.map(q=>{const r=bbq(q),x=Math.max(0,Math.floor(r.x)),y=Math.max(0,Math.floor(r.y));return col(g,x,y,Math.max(1,Math.min(W-x,Math.ceil(r.w))),Math.max(1,Math.min(H-y,Math.ceil(r.h))),it.br??dBr)});
- qs.forEach((q,i)=>{g.globalAlpha=i==soft?.4:1;g.fillStyle=g.strokeStyle=cs[i];g.lineWidth=Math.max(1.5,2*s);g.lineJoin='round';g.beginPath();q.forEach(([x,y],k)=>k?g.lineTo(x,y):g.moveTo(x,y));g.closePath();g.fill();g.stroke();texture(g,q,it.tx??dTx,s)});g.globalAlpha=1;
+let BC=null;
+function baseOf(it,s){const W=Math.round(it.bmp.width*s),H=Math.round(it.bmp.height*s),c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d',{willReadFrequently:true});g.drawImage(it.bmp,0,0,W,H);return{it,s,c,g}}
+const qpath=(g,q)=>{g.beginPath();q.forEach(([x,y],k)=>k?g.lineTo(x,y):g.moveTo(x,y));g.closePath()};
+function paint(it,c,s,soft=-1,cache=true){
+ const B=cache?(BC&&BC.it===it&&BC.s===s?BC:(BC=baseOf(it,s))):baseOf(it,s),W=B.c.width,H=B.c.height;
+ if(c.width!=W||c.height!=H){c.width=W;c.height=H}const g=c.getContext('2d');g.setTransform(1,0,0,1,0,0);g.globalAlpha=1;g.globalCompositeOperation='source-over';g.filter='none';g.clearRect(0,0,W,H);g.drawImage(B.c,0,0);
+ const qs=it.boxes.map(b=>b.q.map(([x,y])=>[x*s,y*s])),lw=Math.max(1.5,2*s);
+ if(cache&&(!it._pc||it._pc.size>60))it._pc=new Map();
+ qs.forEach((q,i)=>{const al=i==soft?.4:1,t=it.tx??dTx,br=it.br??dBr,key=cache&&[s,al,t,br,$('#pure').checked,q.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1))].join('|');
+  let Ly=cache&&it._pc.get(key);if(!Ly){Ly=layer(B,q,t,br,al,lw);if(cache)it._pc.set(key,Ly)}
+  if(Ly.cv)g.drawImage(Ly.cv,Ly.x,Ly.y);else{g.globalAlpha=al;g.fillStyle=g.strokeStyle=Ly.fill;g.lineWidth=lw;g.lineJoin='round';qpath(g,q);g.fill();g.stroke();g.globalAlpha=1}});
+ if(!cache)B.c.width=B.c.height=0;
  return qs}
-function texture(g,q,t,s){
- if(t!='gloss'&&t!='wet')return;const wet=t=='wet',r=bbq(q),T=[(q[0][0]+q[1][0])/2,(q[0][1]+q[1][1])/2],B=[(q[3][0]+q[2][0])/2,(q[3][1]+q[2][1])/2],L=[(q[0][0]+q[3][0])/2,(q[0][1]+q[3][1])/2],Rr=[(q[1][0]+q[2][0])/2,(q[1][1]+q[2][1])/2],ph=Math.hypot(B[0]-T[0],B[1]-T[1]);
- if(ph<3)return;g.save();g.beginPath();q.forEach(([x,y],k)=>k?g.lineTo(x,y):g.moveTo(x,y));g.closePath();g.clip();
- if(wet){g.fillStyle='rgba(0,0,0,.08)';g.fillRect(r.x,r.y,r.w,r.h)}
- const v=g.createLinearGradient(T[0],T[1],B[0],B[1]);v.addColorStop(0,`rgba(255,255,255,${wet?.42:.34})`);v.addColorStop(.5,'rgba(255,255,255,.05)');v.addColorStop(1,`rgba(0,0,0,${wet?.16:.1})`);g.fillStyle=v;g.fillRect(r.x,r.y,r.w,r.h);
- const h=g.createLinearGradient(q[0][0],q[0][1],q[2][0],q[2][1]);h.addColorStop(.1,'rgba(255,255,255,0)');h.addColorStop(.3,`rgba(255,255,255,${wet?.2:.15})`);h.addColorStop(.5,'rgba(255,255,255,0)');g.fillStyle=h;g.fillRect(r.x,r.y,r.w,r.h);
- if(wet){let sd=(Math.round(q[0][0]/s)*73856093^Math.round(q[0][1]/s)*19349663)>>>0||1;const rnd=()=>(sd=(sd*1664525+1013904223)>>>0)/4294967296,pw=Math.hypot(Rr[0]-L[0],Rr[1]-L[1]),n=Math.max(10,Math.min(60,Math.round(pw/ph*12)));
-  for(let i=0;i<n;i++){const u=rnd(),w=rnd(),rad=ph*(.015+.055*rnd()**2.2),x=(1-u)*(1-w)*q[0][0]+u*(1-w)*q[1][0]+u*w*q[2][0]+(1-u)*w*q[3][0],y=(1-u)*(1-w)*q[0][1]+u*(1-w)*q[1][1]+u*w*q[2][1]+(1-u)*w*q[3][1];if(rad<.6)continue;
-   g.fillStyle='rgba(0,0,0,.2)';g.beginPath();g.arc(x+rad*.22,y+rad*.3,rad,0,7);g.fill();g.fillStyle='rgba(255,255,255,.22)';g.beginPath();g.arc(x,y,rad*.92,0,7);g.fill();g.fillStyle='rgba(255,255,255,.9)';g.beginPath();g.arc(x-rad*.32,y-rad*.34,rad*.3,0,7);g.fill()}}
- g.restore()}
+function layer(B,q,t,br,al,lw){
+ const W=B.c.width,H=B.c.height,r=bbq(q),x0=Math.max(0,Math.floor(r.x)),y0=Math.max(0,Math.floor(r.y));
+ const fill=col(B.g,x0,y0,Math.max(1,Math.min(W-x0,Math.ceil(r.w))),Math.max(1,Math.min(H-y0,Math.ceil(r.h))),br);
+ if(t!='gloss'&&t!='wet')return{fill};
+ const x=Math.max(0,x0-1),y=Math.max(0,y0-1),w=Math.min(W-x,Math.ceil(r.w)+3),h=Math.min(H-y,Math.ceil(r.h)+3);if(w<6||h<4)return{fill};
+ const d=B.g.getImageData(x,y,w,h).data,N=w*h,wet=t=='wet',pc=document.createElement('canvas');pc.width=w;pc.height=h;const m=pc.getContext('2d',{willReadFrequently:true});
+ m.translate(-x,-y);m.lineWidth=lw;m.lineJoin='round';qpath(m,q);m.fill();m.stroke();m.setTransform(1,0,0,1,0,0);
+ const md=m.getImageData(0,0,w,h).data,L=new Float32Array(N),ins=[];
+ for(let i=0;i<N;i++){L[i]=.299*d[i*4]+.587*d[i*4+1]+.114*d[i*4+2];if(md[i*4+3]>200)ins.push(i)}
+ if(ins.length<12)return{fill};
+ const sv=ins.map(i=>L[i]).sort((a,b)=>a-b),pcl=p=>sv[Math.min(sv.length-1,Math.floor(sv.length*p))],cut=pcl(.6),white=pcl(.75);
+ // smooth lighting: quadratic surface fitted to the plate background only (characters excluded, never readable)
+ const A=new Float64Array(36),Bv=new Float64Array(6),fx=i=>{const px=i%w,py=(i-px)/w,u=px/w*2-1,v=py/h*2-1;return[1,u,v,u*u,u*v,v*v]};let nb=0;
+ for(let k=0;k<ins.length;k+=Math.max(1,ins.length>>11)){const i=ins[k];if(L[i]<cut)continue;const f=fx(i);nb++;for(let a=0;a<6;a++){Bv[a]+=f[a]*L[i];for(let b=0;b<6;b++)A[a*6+b]+=f[a]*f[b]}}
+ let c=[0,0,0,0,0,0];if(nb>=12){for(let a=0;a<6;a++)A[a*7]+=1e-3*nb;const M=[];for(let a=0;a<6;a++)M.push([...A.slice(a*6,a*6+6),Bv[a]]);
+  for(let a=0;a<6;a++){let p=a;for(let r=a+1;r<6;r++)if(Math.abs(M[r][a])>Math.abs(M[p][a]))p=r;[M[a],M[p]]=[M[p],M[a]];for(let r=0;r<6;r++)if(r!=a){const f=M[r][a]/M[a][a];for(let k=a;k<7;k++)M[r][k]-=f*M[a][k]}}c=M.map((r,a)=>r[6]/r[a])}
+ const fit=i=>{const f=fx(i);let v=0;for(let a=0;a<6;a++)v+=c[a]*f[a];return v};let fm=0;for(const i of ins)fm+=fit(i);fm/=ins.length;if(!(fm>1))fm=white||1;
+ const rs=[];for(let k=0;k<ins.length;k+=Math.max(1,ins.length>>10)){const i=ins[k];if(L[i]>=white)rs.push(Math.abs(L[i]-fit(i)))}rs.sort((a,b)=>a-b);const sig=Math.min(3,Math.max(.4,(rs[rs.length>>1]||1)*1.48*.5));
+ const fc=fill[0]=='#'?[255,255,255]:fill.match(/\d+/g).map(Number),gain=wet?2.2:1.8,dk=wet?.88:1,out=m.createImageData(w,h),o=out.data;let sd=(x*73856093^y*19349663)>>>0||1;const rnd=()=>{sd=(sd*1664525+1013904223)>>>0;return sd/4294967296};
+ for(let i=0;i<N;i++){const a=md[i*4+3];if(!a)continue;const rr=Math.min(1.5,Math.max(.55,1+gain*(fit(i)/fm-1)))*dk,n=(rnd()+rnd()+rnd()-1.5)*2*sig;
+  for(let k=0;k<3;k++){const v=fc[k];o[i*4+k]=v*rr+n*Math.min(1,v/fm)}o[i*4+3]=a*al}
+ m.putImageData(out,0,0);
+ if(wet){// water drops: soft, lit from the same side as the plate's real light
+  const gl=Math.hypot(c[1],c[2])||1,lx=-c[1]/gl,ly=-c[2]/gl;m.globalCompositeOperation='source-atop';m.translate(-x,-y);m.filter=`blur(${Math.max(.3,h*.006).toFixed(2)}px)`;
+  const n=Math.max(10,Math.min(70,Math.round(w/h*14)));
+  for(let k=0;k<n;k++){const u=rnd(),v=rnd(),rad=h*(.01+.045*rnd()**2.5),px=(1-u)*(1-v)*q[0][0]+u*(1-v)*q[1][0]+u*v*q[2][0]+(1-u)*v*q[3][0],py=(1-u)*(1-v)*q[0][1]+u*(1-v)*q[1][1]+u*v*q[2][1]+(1-u)*v*q[3][1],ry=rad*(1+rnd()*.5);
+   const rg=m.createRadialGradient(px,py,0,px,py,rad);rg.addColorStop(0,'rgba(0,0,0,0)');rg.addColorStop(.7,'rgba(0,0,0,.05)');rg.addColorStop(1,'rgba(0,0,0,.16)');m.fillStyle=rg;m.beginPath();m.ellipse(px,py,rad,ry,0,0,7);m.fill();
+   m.fillStyle='rgba(255,255,255,.6)';m.beginPath();m.ellipse(px+lx*rad*.4,py+ly*ry*.4,rad*.28,ry*.2,0,0,7);m.fill()}}
+ return{fill,cv:pc,x,y}}
 function crop(W,H,it){
  if(!ratio)return[0,0,W,H];
  const[a,b]=ratio.split(':').map(Number),R=a/b,cs=it.cs||1;let w=W,h=H;
@@ -395,10 +428,10 @@ async function loadOrt(){
  ort.env.wasm.wasmPaths='ort/';ort.env.wasm.numThreads=1;ort.env.wasm.proxy=false}
 
 function draw(){
- const it=items[cur];if(!it)return;
- const uz=UZ(),PV=Math.min(4096,Math.max(1800,cv.parentElement.clientWidth*(devicePixelRatio||1)*Math.min(z,2))),s=Math.min(1,PV/Math.max(it.bmp.width,it.bmp.height)),bx=paint(it,cv,s,sel),g=cv.getContext('2d'),lw=Math.max(2,cv.width/300);
+ const it=items[cur];if(!it||!it.bmp)return;
+ const uz=UZ(),PV=Math.min(4096,Math.max(1800,cv.parentElement.clientWidth*(devicePixelRatio||1)*(z>1.3?2:1))),s=Math.min(1,PV/Math.max(it.bmp.width,it.bmp.height)),bx=paint(it,cv,s,sel),g=cv.getContext('2d'),lw=Math.max(2,cv.width/300);
  const q0=uz*Math.max(.8,1/Math.sqrt(z))/((cv.getBoundingClientRect().width/cv.width)||1);
- if(peek){paint({bmp:it.bmp,boxes:[]},cv,s);$('#delb').hidden=true;cursorOv();return}
+ if(peek){paint({bmp:it.bmp,boxes:[]},cv,s,-1,false);$('#delb').hidden=true;cursorOv();return}
  if(sel>=0&&bx[sel]){const Q=bx[sel],q=q0;
   const path=()=>{g.beginPath();Q.forEach(([a,b],k)=>k?g.lineTo(a,b):g.moveTo(a,b));g.closePath()};
   g.lineJoin='round';g.strokeStyle='#fff';g.lineWidth=5*q;path();g.stroke();g.strokeStyle='#2f6bff';g.lineWidth=2.5*q;path();g.stroke();
@@ -422,14 +455,15 @@ function cursorOv(){
  g.strokeStyle='#fff';g.lineWidth=4.5;g.beginPath();g.arc(T[0],T[1],11,0,7);g.stroke();g.strokeStyle='#2f6bff';g.lineWidth=2.5;g.stroke()}
 function thumb(it){const c=document.createElement('canvas'),k=112/Math.min(it.bmp.width,it.bmp.height);c.width=Math.round(it.bmp.width*k);c.height=Math.round(it.bmp.height*k);c.getContext('2d').drawImage(it.bmp,0,0,c.width,c.height);it.th=c.toDataURL('image/jpeg',.7);c.width=c.height=0}
 function ui(){
+ busyUI();
  let nf=false;if(lastCur!=cur){lastCur=cur;sel=-1;nf=true}
  const has=items.length>0,it=items[cur],n=items.filter(q=>q.ok).length,all=has&&n==items.length;
  $('#empty').hidden=has;$('#work').hidden=!has;$('#bar').hidden=!has;document.body.classList.toggle('work',has);
  if(nf){fitView();zr()}
  $('#s1').className='st'+(has?' dn':' on');$('#s2').className='st'+(has&&!all?' on':all?' dn':'');$('#s3').className='st'+(all?' on':'');
- const th=$('#th');th.innerHTML='';
- items.forEach((q,i)=>{const b=document.createElement('button');b.className='tb'+(i==cur?' on':'');b.style.backgroundImage=`url(${q.th})`;b.innerHTML=`<span class="nm">${i+1}</span>`+(q.ok?`<span class="ck">${IC.check12}</span>`:'')+(q.st=='wait'||q.st=='run'?'<span class="sp"></span>':'')+(i==cur?'<span class="x" aria-label="この写真を外す">×</span>':'');b.onclick=e=>{if(e.target.closest('.x'))return removePhoto(i);goImg(i)};th.appendChild(b)});
- const add=document.createElement('label');add.htmlFor='pick';add.className='tb add';add.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>';th.appendChild(add);
+ const th=$('#th'),sig=items.map(q=>q.id+(q.ok?'k':'')+(q.st||'')).join()+'|'+cur;if(th.dataset.sig!==sig){th.dataset.sig=sig;th.innerHTML='';
+ items.forEach((q,i)=>{const b=document.createElement('button');b.className='tb'+(i==cur?' on':'');b.style.backgroundImage=`url(${q.th})`;b.innerHTML=`<span class="nm">${i+1}</span>`+(q.ok?`<span class="ck">${IC.check12}</span>`:'')+(q.st=='wait'||q.st=='run'?'<span class="sp"></span>':'')+(i==cur?'<span class="x" aria-label="この写真を外す">×</span>':'');b.onclick=e=>{if(e.target.closest('.x'))return removePhoto(i);if(i!==cur)goImg(i)};th.appendChild(b)});
+ const add=document.createElement('label');add.htmlFor='pick';add.className='tb add';add.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>';th.appendChild(add)}
  if(it){const b=it.boxes.length,h=$('#hint');
   const busy=(it.st=='wait'||it.st=='run')&&!b;h.className=busy?'run':mode||cropMode()?'det':b?'ok':'';
   h.lastChild.textContent=cropMode()?'枠をドラッグで位置・スライダーで大きさ':mode=='det'?'探したい範囲を囲む':mode=='hide'?'隠したい場所をなぞる':busy?'ナンバーを検出中…':b?`${b}か所 隠し済み`:'見つからなければ「範囲で検出」「手動で隠す」';
@@ -445,7 +479,13 @@ function ui(){
   document.querySelectorAll('#qseg button').forEach(b=>b.className=b.dataset.q==qual?'on':'');
   document.querySelectorAll('#fseg button').forEach(b=>b.className=b.dataset.f==fmt?'on':'');
   $('#br').value=it.br??dBr;document.querySelectorAll('#xseg button').forEach(b=>b.className=b.dataset.x==(it.tx??dTx)?'on':'')}}
-function goImg(i){cur=i;mode='';ui();draw()}
+let mprog=0;
+function loadUI(){const e=$('#mload');e.hidden=mstate!='loading';if(!e.hidden){e.children[1].textContent='自動検出を準備中… '+Math.round(mprog*100)+'%';e.querySelector('u').style.width=Math.round(mprog*100)+'%'}busyUI()}
+function busyUI(){const it=items[cur],e=$('#busy');const on=!!it&&(it.st=='wait'||it.st=='run')&&mstate!='off';e.hidden=!on;if(!on)return;
+ if(mstate=='loading'&&it.st=='wait'){e.children[1].textContent='検出の準備中… '+Math.round(mprog*100)+'%';e.querySelector('u').style.width=Math.round(mprog*100)+'%';return}
+ if(!it.t0)it.t0=performance.now();const slow=performance.now()-it.t0>6000;e.children[1].textContent=slow?'もうしばらくお待ちください…':'ナンバーを検出中…';e.querySelector('u').style.width=Math.round((it.prog||0)*100)+'%'}
+setInterval(busyUI,1000);
+async function goImg(i){const it=items[i];if(!it)return;if(!it.bmp){try{await ensureBmp(it)}catch(_){return}}if(items[i]!==it)return;cur=i;mode='';ui();draw();trimBmps()}
 function nextIdx(){for(let k=1;k<=items.length;k++){const i=(cur+k)%items.length;if(!items[i].ok)return i}return -1}
 function pt(e){const r=cv.getBoundingClientRect(),it=items[cur];return[(e.clientX-r.left)/r.width*it.bmp.width,(e.clientY-r.top)/r.height*it.bmp.height]}
 const VW=cv.parentElement;
@@ -460,10 +500,10 @@ VW.onpointermove=e=>{
  if(P.size==2&&g0&&!g0.pan){const n=gest(),r=cv.parentElement.getBoundingClientRect();tx+=n.mx-g0.mx;ty+=n.my-g0.my;zoomAt(n.d/g0.d,n.mx-r.left,n.my-r.top);g0=n;return}
  if(g0&&g0.pan){tx=g0.tx+e.clientX-g0.x;ty=g0.ty+e.clientY-g0.y;apply();return}
  if(drag){movedrag(pt(e));rdraw()}};
-VW.onpointerup=e=>{loupe(null);
+VW.onpointerup=e=>{
  P.delete(e.pointerId);if(g0){if(P.size<2)g0=null;drag=null;return}
  if(!drag)return;const d=drag;enddrag();drag=null;draw();ui();if(d.m=='d')runRegion(d)};
-VW.onpointercancel=e=>{loupe(null);P.delete(e.pointerId);g0=null;drag=null;draw()};
+VW.onpointercancel=e=>{P.delete(e.pointerId);g0=null;drag=null;draw()};
 $('#pure').oninput=()=>{$('#br').disabled=$('#pure').checked;draw()};
 $('#br').oninput=e=>{dBr=+e.target.value;const it=items[cur];if(it)it.br=dBr;draw()};
 document.querySelectorAll('#xseg button').forEach(b=>b.onclick=()=>{dTx=b.dataset.x;const it=items[cur];if(it)it.tx=dTx;ui();draw();saveSet()});
@@ -521,7 +561,9 @@ function enddrag(){
  let[X0,Y0,CW,CH]=ratio?crop(W,H,it):[0,0,W,H];const cl=v=>[Math.min(X0+CW,Math.max(X0,v[0])),Math.min(Y0+CH,Math.max(Y0,v[1]))],a=cl(d.a),b=cl(d.b),x=Math.min(a[0],b[0]),y=Math.min(a[1],b[1]),w=Math.abs(a[0]-b[0]),h=Math.abs(a[1]-b[1]);
  if(w<W*.015/z&&h<W*.015/z){sel=-1}else{pushHist(it);it.boxes.push(rq(x,y,Math.min(W-x,w),Math.min(H-y,h)));sel=it.boxes.length-1;it.ok=false}}
 async function runRegion(d){
- const it=items[cur],W=it.bmp.width,H=it.bmp.height,a=d.a,b=d.b;
+ const it=items[cur];if(!it||!it.bmp)return;it.busy=true;try{await runRegion0(it,d)}finally{it.busy=false}}
+async function runRegion0(it,d){
+ const W=it.bmp.width,H=it.bmp.height,a=d.a,b=d.b;
  let x=Math.max(0,Math.min(a[0],b[0])),y=Math.max(0,Math.min(a[1],b[1])),w=Math.min(W-x,Math.abs(a[0]-b[0])),h=Math.min(H-y,Math.abs(a[1]-b[1]));
  if(w<W*.02&&h<W*.02){return}
  if(!sess){msg('自動検出がオフです');return}
@@ -555,11 +597,10 @@ function placeDel(){
  let x=tx+(b.x+b.w/2)*k-dw/2,y=ty+b.y*k-dh*(1+ex)-22*u;
  if(y<4+dh*ex){const yb=ty+(b.y+b.h)*k+dh*ex+22*u,zc=$('#zc'),zt=zc.hidden?h:zc.offsetTop-(u-1)*zc.offsetHeight;y=yb+dh*(1+ex)<=Math.min(h,zt)-4?yb:4+dh*ex}
  d.style.left=Math.max(4+dw*ex,Math.min(w-dw*(1+ex)-4,x))+'px';d.style.top=Math.max(4+dh*ex,Math.min(h-dh*(1+ex)-4,y))+'px'}
-function loupe(){}
 function layoutMode(){const w=innerWidth>=900,sh=innerHeight<520&&innerWidth>=600&&innerWidth>innerHeight;document.body.classList.toggle('wide',w||sh);document.body.classList.toggle('short',sh);placeDock(w||sh)}
 function placeDock(wide){const d=$('#dock'),t=$('#tools'),ps=$('#pSize'),pt=$('#pSet');if(!wide){if(t.parentElement!==d)d.append(ps,pt,t)}else if(t.parentElement===d)$('#hint').after(t,ps,pt)}
 layoutMode();
-function fitView(){const v=cv.parentElement,it=items[cur];if(!it){v.style.maxWidth='';return}
+function fitView(){const v=cv.parentElement,it=items[cur];if(!it||!it.bmp){v.style.maxWidth='';return}
  const wide=document.body.classList.contains('wide'),sh=document.body.classList.contains('short'),bh=sh?($('#bar').offsetHeight||70):wide?100*UZ():($('#bar').offsetHeight||150)+8,hh=wide?0:($('#hint').offsetHeight||24)+8,top=Math.max(sh?40:wide?110:60,v.getBoundingClientRect().top+scrollY),avail=Math.max(sh?150:wide?260:Math.round(innerHeight*.45),innerHeight-top-(wide?58*UZ():50)-bh-hh);
  v.style.maxWidth=Math.round(avail*it.bmp.width/it.bmp.height)+'px'}
 let lastBH=-1;new ResizeObserver(()=>{const h=$('#bar').offsetHeight;document.documentElement.style.setProperty('--barh',(h||110)+'px');if(!h||h==lastBH)return;lastBH=h;if(cur<0||document.body.classList.contains('wide'))return;const v=cv.parentElement,w0=v.clientWidth;fitView();const k=w0?v.clientWidth/w0:1;tx*=k;ty*=k;apply();draw();const gap=$('#vw').getBoundingClientRect().bottom+8-$('#bar').getBoundingClientRect().top;if(gap>0)scrollBy({top:gap,behavior:'smooth'})}).observe($('#bar'));
@@ -573,11 +614,18 @@ $('#zp').onclick=()=>zoomAt(1.6,...vc());$('#zm').onclick=()=>zoomAt(1/1.6,...vc
 $('#zh').onclick=()=>{pan=!pan;$('#zh').className=pan?'on':''};
 cv.parentElement.addEventListener('wheel',e=>{e.preventDefault();const r=cv.parentElement.getBoundingClientRect();zoomAt(e.deltaY<0?1.2:1/1.2,e.clientX-r.left,e.clientY-r.top)},{passive:false});
 
+// photos are decoded on demand and released when not in use, so many photos never exhaust phone memory
+async function decode(f){let b=await createImageBitmap(f,{imageOrientation:'from-image'});const px=b.width*b.height;
+ if(px>MAXPX){const k=Math.sqrt(MAXPX/px),c=document.createElement('canvas');c.width=Math.floor(b.width*k);c.height=Math.floor(b.height*k);c.getContext('2d').drawImage(b,0,0,c.width,c.height);b.close();b=await createImageBitmap(c);c.width=c.height=0}return b}
+function ensureBmp(it){if(it.bmp)return Promise.resolve(it.bmp);if(!it.dec)it.dec=decode(it.file).then(b=>{it.dec=null;if(it.gone){b.close();throw new Error('gone')}it.bmp=b;return b},e=>{it.dec=null;throw e});return it.dec}
+function trimBmps(){const c=items[cur];for(const it of items)if(it!==c&&it.file&&it.bmp&&it.st!='run'&&!it.busy){try{it.bmp.close()}catch(_){}it.bmp=null;it._pc=null}if(BC&&BC.it!==c)BC=null}
+let uid=0;
 async function addFiles(files){
- const fresh=[];let bad=0;
- for(const f of files){if(f.type&&!f.type.startsWith('image/')){bad++;continue}try{const bmp=await createImageBitmap(f,{imageOrientation:'from-image'});const it={name:(f.name||'photo').replace(/\.[^.]+$/,''),bmp,boxes:[],ok:false,cx:.5,cy:.5,cs:1,br:dBr,tx:dTx};thumb(it);items.push(it);fresh.push(it)}catch(_){bad++}}
+ const fresh=[];let bad=0,first=true;
+ for(const f of files){if(f.type&&!f.type.startsWith('image/')){bad++;continue}try{const bmp=await decode(f);const it={id:++uid,file:f,name:(f.name||'photo').replace(/\.[^.]+$/,''),bmp,boxes:[],ok:false,cx:.5,cy:.5,cs:1,br:dBr,tx:dTx};thumb(it);items.push(it);fresh.push(it);
+  if(cur<0){cur=items.indexOf(it);ui();draw()}else if(!first||it!==items[cur]){try{bmp.close()}catch(_){}it.bmp=null}first=false;await new Promise(r=>setTimeout(r,0))}catch(_){bad++}}
  if(bad)msg('開けない写真がありました');
- if(!fresh.length)return;if(cur<0)cur=items.indexOf(fresh[0]);ui();draw();queueDetect(fresh)}
+ if(!fresh.length)return;ui();draw();queueDetect(fresh)}
 $('#pick').onchange=e=>{const f=[...e.target.files];e.target.value='';addFiles(f)};
 addEventListener('dragover',e=>{if([...(e.dataTransfer?.types||[])].includes('Files')){e.preventDefault();document.body.classList.add('dz')}});
 addEventListener('dragleave',e=>{if(!e.relatedTarget)document.body.classList.remove('dz')});
@@ -585,40 +633,46 @@ addEventListener('drop',e=>{e.preventDefault();document.body.classList.remove('d
 addEventListener('paste',e=>{const f=[...(e.clipboardData?.files||[])].filter(x=>x.type.startsWith('image/'));if(f.length){e.preventDefault();addFiles(f)}});
 const dq=[];let drun=false;
 function queueDetect(list){for(const it of list){if(it.st)continue;if(mstate=='off'){it.st='done';continue}it.st='wait';dq.push(it)}ui();pump()}
-async function pump(){if(drun||!sess)return;drun=true;
- while(dq.length){const i=dq.indexOf(items[cur]),it=dq.splice(i>=0?i:0,1)[0];if(!items.includes(it))continue;it.st='run';ui();await detect(it);it.st='done';ui();if(it===items[cur])draw()}
+async function pump(){if(drun||!sess)return;drun=true;await new Promise(r=>setTimeout(r,60));
+ while(dq.length){const i=dq.indexOf(items[cur]),it=dq.splice(i>=0?i:0,1)[0];if(!items.includes(it))continue;it.st='run';ui();await detect(it);it.st='done';
+  if(it.gone){try{it.bmp&&it.bmp.close()}catch(_){}it.bmp=null}else trimBmps();ui();if(it===items[cur])draw()}
  drun=false}
-function removePhoto(i){const it=items[i];items.splice(i,1);const di=dq.indexOf(it);if(di>=0)dq.splice(di,1);
- if(cur>=items.length)cur=items.length-1;lastCur=-2;sel=-1;mode='';ui();draw();
- msg('写真を外しました',{label:'元に戻す',fn:()=>{items.splice(i,0,it);cur=i;lastCur=-2;if(it.st=='wait'||it.st=='run'){it.st='';queueDetect([it])}ui();draw()},done:()=>{if(!items.includes(it))try{it.bmp.close()}catch(_){}}})}
+async function removePhoto(i){const it=items[i];items.splice(i,1);const di=dq.indexOf(it);if(di>=0)dq.splice(di,1);if(BC&&BC.it===it)BC=null;
+ if(cur>=items.length)cur=items.length-1;const nx=items[cur];if(nx&&!nx.bmp){try{await ensureBmp(nx)}catch(_){}}lastCur=-2;sel=-1;mode='';ui();draw();
+ msg('写真を外しました',{label:'元に戻す',fn:()=>{if(it.gone||!it.bmp&&!it.file)return;items.splice(i,0,it);cur=i;lastCur=-2;if(it.st=='wait'||it.st=='run'){it.st='';queueDetect([it])}ui();draw()},done:()=>{if(!items.includes(it)){it.gone=true;if(it.st!='run'){try{it.bmp&&it.bmp.close()}catch(_){}it.bmp=null}}}})}
 async function demo(){
  const a=await createImageBitmap(demoImg(false,['品川 300','あ 12-34'])),b=await createImageBitmap(demoImg(true,['軽 580','わ 5-67']));
- const i1={name:'sample1',bmp:a,boxes:[rq(475,440,250,125)],ok:false,cx:.5,cy:.5,cs:1,st:'done',saved:true},i2={name:'sample2',bmp:b,boxes:[],ok:false,cx:.5,cy:.5,cs:1,st:'done',saved:true};thumb(i1);thumb(i2);
+ const i1={id:++uid,name:'sample1',bmp:a,boxes:[rq(475,440,250,125)],ok:false,cx:.5,cy:.5,cs:1,st:'done',saved:true},i2={id:++uid,name:'sample2',bmp:b,boxes:[],ok:false,cx:.5,cy:.5,cs:1,st:'done',saved:true};thumb(i1);thumb(i2);
  items.push(i1,i2);if(cur<0)cur=0;ui();draw()}
 $('#demoBtn').onclick=demo;
-const mst=(c,t)=>{const e=$('#mst');e.className=c;e.title=t||''};
+const mst=(c,t)=>{const e=$('#mst');e.className=c;e.title=t||'';e.lastChild.textContent='自動検出：'+(c=='on'?'使用できます':c=='ld'?'準備中':'使えません')};
 (async()=>{
  try{
-  const r=await fetch('model.onnx',{cache:'no-cache'});
+  mprog=.02;loadUI();const r=await fetch('model.onnx',{cache:'no-cache'});
   if(!r.ok){modelOff('model.onnx がありません');return}
-  mst('ld','読み込み中');
-  const b=new Uint8Array(await r.arrayBuffer());
+  mst('ld','読み込み中');let b;
+  if(r.body&&r.body.getReader){const tot=+r.headers.get('content-length')||10.5e6,rd=r.body.getReader(),ch=[];let n=0;
+   for(;;){const{done,value}=await rd.read();if(done)break;ch.push(value);n+=value.length;mprog=Math.min(.85,.02+.83*n/tot);loadUI()}
+   b=new Uint8Array(n);let o=0;for(const c of ch){b.set(c,o);o+=c.length}}
+  else b=new Uint8Array(await r.arrayBuffer());
+  mprog=.9;loadUI();await new Promise(r=>setTimeout(r,30));
   if(b.length<100000||b[0]==60){modelOff('model.onnx がありません');return}
   await loadOrt();sess=await ort.InferenceSession.create(b,{executionProviders:['wasm']});
-  mstate='on';mst('on',`${(b.length/1048576).toFixed(1)}MB`);ui();pump()}
+  mstate='on';mprog=1;mst('on',`${(b.length/1048576).toFixed(1)}MB`);ui();loadUI();pump()}
  catch(err){sess=null;modelOff((err&&err.message||'').toString().slice(0,120))}})();
-function modelOff(t){mstate='off';mst('',t);for(const it of items)if(it.st=='wait')it.st='done';dq.length=0;ui()}
+function modelOff(t){mstate='off';setTimeout(loadUI);mst('',t);for(const it of items)if(it.st=='wait')it.st='done';dq.length=0;ui()}
 async function detect(it){
  try{
-  const bmp=it.bmp,W=bmp.width,H=bmp.height;let c=await infer(bmp,0,0,W,H,.2);
-  for(const t of tilesOf(W,H))c=c.concat(await infer(bmp,...t,.25));
-  const ref=[];for(const b of nms(c,.4)){const r=await refine(bmp,b);let q=plateFit(bmp,r);if(!q&&r!==b)q=plateFit(bmp,b);
+  await ensureBmp(it);const bmp=it.bmp,W=bmp.width,H=bmp.height,T=tilesOf(W,H),yd=()=>new Promise(r=>setTimeout(r,0)),pg=v=>{it.prog=v;if(it===items[cur])busyUI()};
+  it.t0=performance.now();pg(.03);await yd();let c=await infer(bmp,0,0,W,H,.2);
+  for(let k=0;k<T.length;k++){pg(.8*(k+1)/(T.length+1));await yd();c=c.concat(await infer(bmp,...T[k],.25))}
+  const cc=nms(c,.4),ref=[];let kk=0;for(const b of cc){pg(.8+.2*(kk++)/Math.max(1,cc.length));await yd();const r=await refine(bmp,b);let q=plateFit(bmp,r);if(!q&&r!==b)q=plateFit(bmp,b);
    if(q)ref.push({q,s:b.s});else if(b.s>=.45)ref.push(r)}
   const fq=ref.filter(r=>r.q).sort((a,b)=>b.s-a.s),fit=[];for(const f of fq){const B=bbq(f.q);if(fit.every(o=>iou(o.B,B)<.3))fit.push({q:f.q,B})}
   const rest=nms(ref.filter(r=>!r.q)).filter(r=>fit.every(o=>iou(o.B,r)<.3));
   const add=[...fit.map(f=>({q:f.q})),...shapeBoxes(bmp,rest,fit.length?priorOf(fit):null)].filter(n=>!it.boxes.some(o=>iou(bbq(o.q),bbq(n.q))>.3));
-  if(add.length){it.boxes.push(...add);it.ok=false}}
- catch(_){msg('自動検出できませんでした')}}
+  pg(1);if(add.length){it.boxes.push(...add);it.ok=false}}
+ catch(_){if(items.includes(it)&&!it.gone)msg('自動検出できませんでした')}}
 try{const o=JSON.parse(localStorage.getItem('nk_set')||'null');if(o){qual=o.q||qual;fmt=o.f||fmt;$('#pure').checked=!!o.p;dBr=Math.max(-220,Math.min(0,+o.b||0));$('#br').value=dBr;dTx=['matte','gloss','wet'].includes(o.x)?o.x:'matte';$('#br').disabled=!!o.p}}catch(_){}
 const saveSet=()=>{try{localStorage.setItem('nk_set',JSON.stringify({q:qual,f:fmt,p:$('#pure').checked,b:dBr,x:dTx}))}catch(_){}};
 ['#pure','#br'].forEach(q=>$(q).addEventListener('change',saveSet));['#qseg','#fseg'].forEach(q=>$(q).addEventListener('click',()=>setTimeout(saveSet)));
@@ -626,9 +680,11 @@ const saveSet=()=>{try{localStorage.setItem('nk_set',JSON.stringify({q:qual,f:fm
 
 const QL={hi:{q:.95,max:0},md:{q:.85,max:0},lo:{q:.78,max:2048}};
 async function render(it){
+ await ensureBmp(it);it.busy=true;try{return await render0(it)}finally{it.busy=false;trimBmps()}}
+async function render0(it){
  const L=QL[qual],lim=L.max?Math.min(1,L.max/Math.max(it.bmp.width,it.bmp.height)):1;
  const s=Math.min(lim,Math.sqrt(MAXPX/(it.bmp.width*it.bmp.height)),1),c=document.createElement('canvas');
- paint(it,c,s);const[x,y,w,h]=crop(c.width,c.height,it),o=document.createElement('canvas');
+ paint(it,c,s,-1,false);const[x,y,w,h]=crop(c.width,c.height,it),o=document.createElement('canvas');
  o.width=w;o.height=h;o.getContext('2d').drawImage(c,x,y,w,h,0,0,w,h);c.width=c.height=0;
  const blob=await new Promise(r=>o.toBlob(r,fmt,L.q));o.width=o.height=0;
  const ext={'image/png':'png','image/webp':'webp'}[blob.type]||'jpg';
@@ -652,7 +708,7 @@ async function save(kind){
    for(const it of list){const r=await render(it);sc=sc||r.scaled;const u=URL.createObjectURL(r.blob),a=document.createElement('a');a.href=u;a.download=r.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);await new Promise(r=>setTimeout(r,400));done++;it.saved=true}
   }
   if(done)msg(`${done}枚 ${kind=='share'?'共有':'保存'}しました`+(sc?'（端末の上限で縮小あり）':''));
- }finally{bs.forEach(b=>b.disabled=false);ui()}}
+ }finally{bs.forEach(b=>b.disabled=false);trimBmps();ui()}}
 
 addEventListener('beforeunload',e=>{if(items.some(q=>!q.saved)){e.preventDefault();e.returnValue=''}});
 document.addEventListener('keydown',e=>{
