@@ -221,7 +221,7 @@ body:not(.wide) #vw{padding-bottom:50px}body:not(.wide) #th{padding-bottom:8px}b
   <div class="gap"></div>
   <div class="lab">ご利用について</div>
   <ol class="terms"><li>画像はすべてお使いの端末内で処理され、外部のサーバーへ送信・保存されることはありません。</li><li>ナンバーの検出は自動処理のため、隠し漏れが生じる場合があります。公開・共有の前に必ずご自身で確認してください。</li><li>本アプリの利用により生じたいかなる損害についても、開発者は責任を負いません。</li></ol>
-  <div class="about">NumberOFF <span id="ver">v1.1.0</span> ・ <a href="https://github.com/https://hotaru-works/numberoff" target="_blank" rel="noopener">ソースコード</a> ・ AGPL-3.0<br>検出モデル: YOLO11（AGPL-3.0）／推論: ONNX Runtime Web（MIT）<br><span id="mst" title=""><b></b><span>自動検出：準備中</span></span></div>
+  <div class="about">NumberOFF <span id="ver">v1.1.0</span> ・ <a href="https://github.com/hotaru-works/numberoff" target="_blank" rel="noopener">ソースコード</a> ・ AGPL-3.0<br>検出モデル: YOLO11（AGPL-3.0）／推論: ONNX Runtime Web（MIT）<br><span id="mst" title=""><b></b><span>自動検出：準備中</span></span></div>
  </div>
 </div>
 </main>
@@ -282,16 +282,20 @@ function layer(B,q,t,br,al,lw){
   for(let a=0;a<6;a++){let p=a;for(let r=a+1;r<6;r++)if(Math.abs(M[r][a])>Math.abs(M[p][a]))p=r;[M[a],M[p]]=[M[p],M[a]];for(let r=0;r<6;r++)if(r!=a){const f=M[r][a]/M[a][a];for(let k=a;k<7;k++)M[r][k]-=f*M[a][k]}}c=M.map((r,a)=>r[6]/r[a])}
  const fit=i=>{const f=fx(i);let v=0;for(let a=0;a<6;a++)v+=c[a]*f[a];return v};let fm=0;for(const i of ins)fm+=fit(i);fm/=ins.length;if(!(fm>1))fm=white||1;
  const rs=[];for(let k=0;k<ins.length;k+=Math.max(1,ins.length>>10)){const i=ins[k];if(L[i]>=white)rs.push(Math.abs(L[i]-fit(i)))}rs.sort((a,b)=>a-b);const sig=Math.min(3,Math.max(.4,(rs[rs.length>>1]||1)*1.48*.5));
- const fc=fill[0]=='#'?[255,255,255]:fill.match(/\d+/g).map(Number),gain=wet?2.2:1.8,dk=wet?.88:1,out=m.createImageData(w,h),o=out.data;let sd=(x*73856093^y*19349663)>>>0||1;const rnd=()=>{sd=(sd*1664525+1013904223)>>>0;return sd/4294967296};
+ const fc=fill[0]=='#'?[255,255,255]:fill.match(/\d+/g).map(Number),gain=wet?2.2:1.8,dk=wet?.88:1,out=m.createImageData(w,h),o=out.data;let sd=(Math.round(r.x/W*1e4)*73856093^Math.round(r.y/H*1e4)*19349663)>>>0||1;const rnd=()=>{sd=(sd*1664525+1013904223)>>>0;return sd/4294967296};
  for(let i=0;i<N;i++){const a=md[i*4+3];if(!a)continue;const rr=Math.min(1.5,Math.max(.55,1+gain*(fit(i)/fm-1)))*dk,n=(rnd()+rnd()+rnd()-1.5)*2*sig;
   for(let k=0;k<3;k++){const v=fc[k];o[i*4+k]=v*rr+n*Math.min(1,v/fm)}o[i*4+3]=a*al}
+ if(wet){// rain: many tiny beads like real water on a plate, sized to the plate and lit from the plate's real light side
+  let lx=-c[1],ly=-c[2];const gn=Math.hypot(lx,ly);if(gn<1){lx=-.5;ly=-.85}else{lx/=gn;ly/=gn}
+  const area=ins.length,ph=Math.sqrt(area/2.1),n=Math.round(Math.min(900,area/(ph*ph)*100)),pick=()=>ins[Math.floor(rnd()*ins.length)];
+  for(let k=0;k<n;k++){const p=pick(),cx=p%w+rnd(),cy=(p-p%w)/w+rnd(),rad=ph*(.0035+.017*rnd()**3),rh=rad*(1+.35*rnd()),hl=rad<1.1?(rnd()<.3?.25+.5*rnd():0):.2+.8*rnd()**2,R0=Math.ceil(rad*1.6+1);
+   const hx=cx+lx*rad*.38,hy=cy+ly*rh*.38,hr=Math.max(.45,rad*.32);
+   for(let yy=Math.max(0,Math.floor(cy-R0*1.4));yy<=Math.min(h-1,cy+R0*1.4);yy++)for(let xx=Math.max(0,Math.floor(cx-R0));xx<=Math.min(w-1,cx+R0);xx++){const i=yy*w+xx;if(!md[i*4+3])continue;
+    const dx=(xx+.5-cx)/rad,dy=(yy+.5-cy)/rh,dd=Math.sqrt(dx*dx+dy*dy);let dk=0;
+    if(rad>1.1&&dd<1.25){const e=Math.max(0,1-Math.abs(dd-.88)/.32);dk=.16*e*(.6+.4*Math.max(0,dx*-lx+dy*-ly))}else if(rad<=1.1)dk=.09*Math.exp(-dd*dd*1.4)
+    const sx=(xx+.5-hx)/hr,sy=(yy+.5-hy)/hr,sp=Math.exp(-(sx*sx+sy*sy)*1.6)*hl;
+    for(let ch=0;ch<3;ch++){const v=o[i*4+ch];o[i*4+ch]=v*(1-dk)+(255-v)*sp*.85}}}}
  m.putImageData(out,0,0);
- if(wet){// water drops: soft, lit from the same side as the plate's real light
-  const gl=Math.hypot(c[1],c[2])||1,lx=-c[1]/gl,ly=-c[2]/gl;m.globalCompositeOperation='source-atop';m.translate(-x,-y);m.filter=`blur(${Math.max(.3,h*.006).toFixed(2)}px)`;
-  const n=Math.max(10,Math.min(70,Math.round(w/h*14)));
-  for(let k=0;k<n;k++){const u=rnd(),v=rnd(),rad=h*(.01+.045*rnd()**2.5),px=(1-u)*(1-v)*q[0][0]+u*(1-v)*q[1][0]+u*v*q[2][0]+(1-u)*v*q[3][0],py=(1-u)*(1-v)*q[0][1]+u*(1-v)*q[1][1]+u*v*q[2][1]+(1-u)*v*q[3][1],ry=rad*(1+rnd()*.5);
-   const rg=m.createRadialGradient(px,py,0,px,py,rad);rg.addColorStop(0,'rgba(0,0,0,0)');rg.addColorStop(.7,'rgba(0,0,0,.05)');rg.addColorStop(1,'rgba(0,0,0,.16)');m.fillStyle=rg;m.beginPath();m.ellipse(px,py,rad,ry,0,0,7);m.fill();
-   m.fillStyle='rgba(255,255,255,.6)';m.beginPath();m.ellipse(px+lx*rad*.4,py+ly*ry*.4,rad*.28,ry*.2,0,0,7);m.fill()}}
  return{fill,cv:pc,x,y}}
 function crop(W,H,it){
  if(!ratio)return[0,0,W,H];
