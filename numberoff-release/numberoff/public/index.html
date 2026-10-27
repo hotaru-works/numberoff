@@ -127,6 +127,7 @@ input[type=range]{flex:1;accent-color:var(--fg)}
 #cseg>*{flex:none;width:34px;height:34px;border-radius:50%;border:0;padding:0;background:var(--c);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--fg) 22%,transparent);position:relative;cursor:pointer}
 #cseg .auto{background:conic-gradient(from 200deg,#fff,#dfe7f2,#f4ead8,#fff)}#cseg .auto:after{content:'A';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:800 12px system-ui;color:#555}
 #cseg .cust{background:conic-gradient(#f44,#fd3,#4d6,#3cf,#66f,#e4e,#f44)}#cseg .cust input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;border:0;padding:0}
+body.wide #cseg{flex-wrap:wrap;overflow:visible}
 #cseg>.on{box-shadow:0 0 0 2px var(--card),0 0 0 4px var(--fg)}
 
 body.wide main{max-width:1440px;padding:18px 32px calc(100px + env(safe-area-inset-bottom,0px))}
@@ -335,6 +336,7 @@ async function infer(bmp,sx,sy,sw,sh,th=TH){
  const o=await sess.run({[sess.inputNames[0]]:new ort.Tensor('float32',t,[1,3,S,S])}),out=o[sess.outputNames[0]],N=out.dims[2],nc=out.dims[1]-4,a=out.data,res=[];
  for(let i=0;i<N;i++){let s=0;for(let k=0;k<nc;k++)s=Math.max(s,a[(4+k)*N+i]);if(s<th)continue;const cx=a[i],cy=a[N+i],bw=a[2*N+i],bh=a[3*N+i];res.push({x:sx+(cx-bw/2)/r,y:sy+(cy-bh/2)/r,w:bw/r,h:bh/r,s})}
  return nms(res)}
+function ovr(a,b){const iw=Math.min(a.x+a.w,b.x+b.w)-Math.max(a.x,b.x),ih=Math.min(a.y+a.h,b.y+b.h)-Math.max(a.y,b.y);if(iw<=0||ih<=0)return 0;return iw*ih/Math.max(1,Math.min(a.w*a.h,b.w*b.h))}
 function iou(a,b){const iw=Math.min(a.x+a.w,b.x+b.w)-Math.max(a.x,b.x),ih=Math.min(a.y+a.h,b.y+b.h)-Math.max(a.y,b.y);if(iw<=0||ih<=0)return 0;const i=iw*ih;return i/(a.w*a.h+b.w*b.h-i)}
 async function refine(bmp,b){
  const W=bmp.width,H=bmp.height,sw=Math.max(b.w*2.4,b.h*4.8,48),sh=sw*.7;
@@ -418,7 +420,8 @@ function plateFit(bmp,b){
    while(sp2){const p=S[--sp2],px=p%w,py=(p-px)/w;a++;if(py<my)my=py;if(py>My)My=py;for(let j=-1;j<=1;j++)for(let ii=-1;ii<=1;ii++){const xx=px+ii,yy=py+j;if(xx<0||yy<0||xx>=w||yy>=h)continue;const r=yy*w+xx;if(!reach[r]&&lab[r]!=s.id&&!hl[r]){hl[r]=hn;S[sp2++]=r}}}
    const hh=My-my+1;if(hh>ph*.15&&hh<ph*.8&&a>ph*ph*.01){chars++;if(hh>ph*.28)tall++}}
   if(chars<3||tall<2)continue;if(!pick||fa>pick.fa)pick={fa,q}}
- return pick?pick.q.map(([x,y])=>[Math.min(W,Math.max(0,x0+(x+.5)/k)),Math.min(H,Math.max(0,y0+(y+.5)/k))]):null}
+ if(!pick)return null;const P=pick.q.map(([x,y])=>[x0+(x+.5)/k,y0+(y+.5)/k]),cx=P.reduce((a,p)=>a+p[0],0)/4,cy=P.reduce((a,p)=>a+p[1],0)/4,B0=bbq(P),pad=1/k+1,ex2=1+2*pad/Math.max(1,B0.w),ey2=1+2*pad/Math.max(1,B0.h);
+ return P.map(([x,y])=>[Math.min(W,Math.max(0,cx+(x-cx)*ex2)),Math.min(H,Math.max(0,cy+(y-cy)*ey2))])}
 // plates are white, yellow, green or black; a strongly red/orange or vivid blue area (stripes, paint, lamps) is never a plate
 function colorOK(bmp,b){const x=Math.max(0,Math.floor(b.x+b.w*.1)),y=Math.max(0,Math.floor(b.y+b.h*.1)),w=Math.max(2,Math.min(bmp.width-x,Math.round(b.w*.8))),h=Math.max(2,Math.min(bmp.height-y,Math.round(b.h*.8))),k=Math.min(1,48/w);
  const c=document.createElement('canvas');c.width=Math.max(2,Math.round(w*k));c.height=Math.max(2,Math.round(h*k));const g=c.getContext('2d',{willReadFrequently:true});g.drawImage(bmp,x,y,w,h,0,0,c.width,c.height);const d=g.getImageData(0,0,c.width,c.height).data;c.width=c.height=0;
@@ -426,11 +429,21 @@ function colorOK(bmp,b){const x=Math.max(0,Math.floor(b.x+b.w*.1)),y=Math.max(0,
  for(let i=0,k2=0;i<d.length;i+=4,k2++)if(L[k2]>=t){R+=d[i];G+=d[i+1];B+=d[i+2];n++}R/=n;G/=n;B/=n;const mx=Math.max(R,G,B),mn=Math.min(R,G,B),sat=mx?(mx-mn)/mx:0;
  let hue=0;if(mx>mn){hue=mx==R?((G-B)/(mx-mn))%6:mx==G?(B-R)/(mx-mn)+2:(R-G)/(mx-mn)+4;hue=(hue*60+360)%360}
  return!((sat>.55&&(hue<28||hue>320))||(sat>.7&&hue>190&&hue<270))}
+// a plate always has a row of dark characters of similar height; headlights, grilles and reflections don't
+function digitsOK(bmp,b){if(b.w<36)return true;const x=Math.max(0,Math.floor(b.x)),y=Math.max(0,Math.floor(b.y)),bw0=Math.min(bmp.width-x,Math.ceil(b.w)),bh0=Math.min(bmp.height-y,Math.ceil(b.h));if(bw0<8||bh0<6)return false;
+ const w=200,h=Math.max(8,Math.round(bh0*200/bw0)),N=w*h,c=document.createElement('canvas');c.width=w;c.height=h;const g=c.getContext('2d',{willReadFrequently:true});g.imageSmoothingQuality='high';g.drawImage(bmp,x,y,bw0,bh0,0,0,w,h);const d=g.getImageData(0,0,w,h).data;c.width=c.height=0;
+ const L=new Uint8Array(N),hist=new Float64Array(256);for(let i=0;i<N;i++){L[i]=Math.round(.299*d[i*4]+.587*d[i*4+1]+.114*d[i*4+2]);hist[L[i]]++}
+ let sum=0;for(let i=0;i<256;i++)sum+=i*hist[i];let sB=0,wB=0,thr=0,best=-1;for(let i=0;i<256;i++){wB+=hist[i];if(!wB)continue;const wF=N-wB;if(!wF)break;sB+=i*hist[i];const v=wB*wF*(sB/wB-(sum-sB)/wF)**2;if(v>best){best=v;thr=i}}
+ const lab=new Int32Array(N),S=new Int32Array(N),bl=[];let n=0;
+ for(let i=0;i<N;i++){if(L[i]>thr||lab[i])continue;n++;let sp=0,mx=1e9,my=1e9,Mx=-1,My=-1;S[sp++]=i;lab[i]=n;
+  while(sp){const p=S[--sp],px=p%w,py=(p-px)/w;if(px<mx)mx=px;if(px>Mx)Mx=px;if(py<my)my=py;if(py>My)My=py;for(const q of[px>0?p-1:-1,px<w-1?p+1:-1,p-w,p+w])if(q>=0&&q<N&&L[q]<=thr&&!lab[q]){lab[q]=n;S[sp++]=q}}
+  const bh=My-my+1,bw=Mx-mx+1;if(bh>.2*h&&bh<.7*h&&bw<.35*w&&mx>0&&my>0&&Mx<w-1&&My<h-1)bl.push([(my+My)/2,bh])}
+ let al=0;for(const[cy,hh]of bl){let k=0;for(const[c2,h2]of bl)if(Math.abs(c2-cy)<.12*h&&h2/hh>.7&&h2/hh<1.4)k++;al=Math.max(al,k)}return al>=3}
 function tilesOf(W,H){const T=Math.max(1000,Math.sqrt(W*H/12)),nx=Math.ceil(W/T),ny=Math.ceil(H/T);if(nx*ny<=1)return[];
  const tw=Math.min(W,Math.ceil(W/nx*1.25)),th=Math.min(H,Math.ceil(H/ny*1.25)),o=[];
  for(let j=0;j<ny;j++)for(let i=0;i<nx;i++)o.push([nx==1?0:Math.round(i*(W-tw)/(nx-1)),ny==1?0:Math.round(j*(H-th)/(ny-1)),tw,th]);return o}
-function fitAll(bmp,rs,prior){const fit=[],rest=[];for(const r of rs){const q=plateFit(bmp,r);if(q){const B=bbq(q);if(fit.every(f=>iou(f.B,B)<.3))fit.push({q,B})}else rest.push(r)}
- const r2=rest.filter(r=>fit.every(f=>iou(f.B,r)<.3));return[...fit.map(f=>({q:f.q})),...shapeBoxes(bmp,r2,fit.length?priorOf(fit):prior)]}
+function fitAll(bmp,rs,prior){const fit=[],rest=[];for(const r of rs){const q=plateFit(bmp,r);if(q){const B=bbq(q);if(fit.every(f=>ovr(f.B,B)<.4))fit.push({q,B})}else rest.push(r)}
+ const r2=[];for(const r of rest)if(fit.every(f=>ovr(f.B,r)<.4)&&r2.every(o=>ovr(o,r)<.4))r2.push(r);return[...fit.map(f=>({q:f.q})),...shapeBoxes(bmp,r2,fit.length?priorOf(fit):prior)]}
 const med=(a)=>{const v=a.slice().sort((p,q)=>p-q);return v.length?v[v.length>>1]:0};
 function priorOf(boxes){
  const h=[],v=[];for(const{q}of boxes){const dx=q[1][0]-q[0][0],dy=q[3][1]-q[0][1];if(dx>1)h.push((q[1][1]-q[0][1])/dx);if(dy>1)v.push((q[3][0]-q[0][0])/dy)}
@@ -610,7 +623,7 @@ async function runRegion0(it,d){
  try{
   let rs=await infer(it.bmp,x,y,w,h);if(!rs.length)rs=await infer(it.bmp,x,y,w,h,.08);
   rs=rs.filter(r=>{const cx=r.x+r.w/2,cy=r.y+r.h/2;return cx>=x&&cx<=x+w&&cy>=y&&cy<=y+h});
-  const nb=fitAll(it.bmp,rs,priorOf(it.boxes)).filter(n=>!it.boxes.some(o=>iou(bbq(o.q),bbq(n.q))>.3));
+  const nb=fitAll(it.bmp,rs,priorOf(it.boxes)).filter(n=>!it.boxes.some(o=>ovr(bbq(o.q),bbq(n.q))>.4));
   if(!nb.length){msg(tr('見つかりませんでした'));return}
   pushHist(it);it.boxes.push(...nb);it.ok=false;msg(tr('{n}か所 見つかりました',{n:nb.length}))}
  catch(_){msg(tr('検出できませんでした'))}
@@ -709,10 +722,10 @@ async function detect(it){
   it.t0=performance.now();pg(.03);await yd();let c=await infer(bmp,0,0,W,H,.2);
   for(let k=0;k<T.length;k++){pg(.8*(k+1)/(T.length+1));await yd();c=c.concat(await infer(bmp,...T[k],.25))}
   const cc=nms(c,.4),ref=[];let kk=0;for(const b of cc){pg(.8+.2*(kk++)/Math.max(1,cc.length));await yd();const r=await refine(bmp,b);let q=plateFit(bmp,r);if(!q&&r!==b)q=plateFit(bmp,b);
-   if(q){if(colorOK(bmp,bbq(q)))ref.push({q,s:b.s})}else if(b.s>=.45&&colorOK(bmp,r))ref.push(r)}
-  const fq=ref.filter(r=>r.q).sort((a,b)=>b.s-a.s),fit=[];for(const f of fq){const B=bbq(f.q);if(fit.every(o=>iou(o.B,B)<.3))fit.push({q:f.q,B})}
-  const rest=nms(ref.filter(r=>!r.q)).filter(r=>fit.every(o=>iou(o.B,r)<.3));
-  const add=[...fit.map(f=>({q:f.q})),...shapeBoxes(bmp,rest,fit.length?priorOf(fit):null)].filter(n=>!it.boxes.some(o=>iou(bbq(o.q),bbq(n.q))>.3));
+   if(q){if(colorOK(bmp,bbq(q)))ref.push({q,s:b.s})}else if(b.s>=.45&&r.w/r.h>=.7&&r.w/r.h<=4.5&&colorOK(bmp,r)&&digitsOK(bmp,r))ref.push(r)}
+  const fq=ref.filter(r=>r.q).sort((a,b)=>b.s-a.s),fit=[];for(const f of fq){const B=bbq(f.q);if(fit.every(o=>ovr(o.B,B)<.4))fit.push({q:f.q,B})}
+  const rest=[];for(const r of nms(ref.filter(r=>!r.q)))if(fit.every(o=>ovr(o.B,r)<.4)&&rest.every(o=>ovr(o,r)<.4))rest.push(r);
+  const add=[...fit.map(f=>({q:f.q})),...shapeBoxes(bmp,rest,fit.length?priorOf(fit):null)].filter(n=>!it.boxes.some(o=>ovr(bbq(o.q),bbq(n.q))>.4));
   pg(1);if(add.length){it.boxes.push(...add);it.ok=false}}
  catch(_){if(items.includes(it)&&!it.gone)msg(tr('自動検出できませんでした'))}}
 try{const o=JSON.parse(localStorage.getItem('nk_set')||'null');if(o){qual=o.q||qual;fmt=o.f||fmt;dBr=Math.max(-255,Math.min(255,+o.b||0));$('#br').value=dBr;dTx=['matte','gloss','wet'].includes(o.x)?o.x:'matte';dCl=/^#[0-9a-f]{6}$/i.test(o.c||'')?o.c:o.p?'#ffffff':'auto'}}catch(_){}
