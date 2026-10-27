@@ -553,7 +553,7 @@ document.querySelectorAll('#cseg [data-c]').forEach(b=>b.onclick=()=>setCl(b.dat
 $('#cpick').oninput=e=>setCl(e.target.value);
 $('#br').ondblclick=()=>{$('#br').value=0;$('#br').oninput({target:$('#br')});saveSet()};
 $('#br').oninput=e=>{dBr=+e.target.value;const it=items[cur];if(it)it.br=dBr;draw()};
-document.querySelectorAll('#xseg button').forEach(b=>b.onclick=()=>{dTx=b.dataset.x;const it=items[cur];if(it)it.tx=dTx;ui();draw();saveSet()});
+document.querySelectorAll('#xseg button').forEach(b=>b.onclick=()=>{const it=items[cur];if(it)it.tx=b.dataset.x;ui();draw()});
 $('#pos').oninput=e=>{const it=items[cur];if(it){it.cs=1-(+e.target.value)/100;draw()}};
 document.querySelectorAll('#chips button').forEach(b=>b.onclick=()=>{ratio=b.dataset.r;sel=-1;zr();ui();draw()});
 document.querySelectorAll('#qseg button').forEach(b=>b.onclick=()=>{qual=b.dataset.q;ui()});
@@ -728,8 +728,8 @@ async function detect(it){
   const add=[...fit.map(f=>({q:f.q})),...shapeBoxes(bmp,rest,fit.length?priorOf(fit):null)].filter(n=>!it.boxes.some(o=>ovr(bbq(o.q),bbq(n.q))>.4));
   pg(1);if(add.length){it.boxes.push(...add);it.ok=false}}
  catch(_){if(items.includes(it)&&!it.gone)msg(tr('自動検出できませんでした'))}}
-try{const o=JSON.parse(localStorage.getItem('nk_set')||'null');if(o){qual=o.q||qual;fmt=o.f||fmt;dBr=Math.max(-255,Math.min(255,+o.b||0));$('#br').value=dBr;dTx=['matte','gloss','wet'].includes(o.x)?o.x:'matte';dCl=/^#[0-9a-f]{6}$/i.test(o.c||'')?o.c:o.p?'#ffffff':'auto'}}catch(_){}
-const saveSet=()=>{try{localStorage.setItem('nk_set',JSON.stringify({q:qual,f:fmt,b:dBr,x:dTx,c:dCl}))}catch(_){}};
+try{const o=JSON.parse(localStorage.getItem('nk_set')||'null');if(o){qual=o.q||qual;fmt=o.f||fmt;dBr=Math.max(-255,Math.min(255,+o.b||0));$('#br').value=dBr;dCl=/^#[0-9a-f]{6}$/i.test(o.c||'')?o.c:o.p?'#ffffff':'auto'}}catch(_){}
+const saveSet=()=>{try{localStorage.setItem('nk_set',JSON.stringify({q:qual,f:fmt,b:dBr,c:dCl}))}catch(_){}};
 $('#br').addEventListener('change',saveSet);['#qseg','#fseg'].forEach(q=>$(q).addEventListener('click',()=>setTimeout(saveSet)));
 (function(){const c=document.createElement('canvas');c.width=c.height=1;let ok=false;try{ok=c.toDataURL('image/webp').startsWith('data:image/webp')}catch(_){}if(!ok){$('#fseg [data-f="image/webp"]').disabled=true;if(fmt=='image/webp')fmt='image/jpeg'}})();
 
