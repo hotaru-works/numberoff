@@ -35,7 +35,7 @@ test("open a photo, mark it OK and save it", async ({ page }) => {
   await page.click("#obSkip");
   await page.setInputFiles("#pick", CAR);
   await expect(page.locator("#work")).toBeVisible();
-  await expect(page.locator("#th .tb")).toHaveCount(1);
+  await expect(page.locator("#th .tb:not(.add)")).toHaveCount(1);
   // wait until detection has finished (or was skipped)
   await expect(page.locator("#mst")).not.toHaveClass("ld", { timeout: 60_000 });
   await expect(page.locator("#busy")).toBeHidden({ timeout: 60_000 });
