@@ -14,7 +14,7 @@ https://numberoff.pages.dev/
 
 ## 開発
 
-Node.js 20 以上が必要です。
+Node.js 22 以上が必要です。
 
 ```bash
 npm install       # 依存パッケージ（Vite・ONNX Runtime Web など）を取得

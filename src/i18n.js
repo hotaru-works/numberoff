@@ -14,7 +14,7 @@ function i18n() {
   document.title = state.LANG == "en" ? "NumberOFF – Free web app that hides license plates in photos" : TITLE0;
   const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
   let n;
-  while (n = w.nextNode()) {
+  while ((n = w.nextNode())) {
     if (n.parentElement.closest("script,style")) continue;
     if (!T0.has(n)) T0.set(n, n.nodeValue);
     const o = T0.get(n), k = o.trim();

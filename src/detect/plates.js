@@ -53,13 +53,12 @@ function estSlopes(bmp, b) {
     ms.push(Math.hypot(gx, gy));
   }
   const srt = Float32Array.from(ms).sort(), thr = srt[Math.floor(srt.length * 0.7)] || 1;
-  let tot = 0, j = 0;
+  let j = 0;
   for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++, j++) {
     const m = ms[j];
     if (m < thr || m < 20) continue;
     const i = y * w + x;
     const gx = L[i - w + 1] + 2 * L[i + 1] + L[i + w + 1] - L[i - w - 1] - 2 * L[i - 1] - L[i + w - 1], gy = L[i + w - 1] + 2 * L[i + w] + L[i + w + 1] - L[i - w - 1] - 2 * L[i - w] - L[i - w + 1];
-    tot += m;
     if (Math.abs(gy) > Math.abs(gx) * 1.2) {
       const s = -gx / gy;
       if (Math.abs(s) < 0.8) hh[Math.round((s + 0.8) / 1.6 * (NB - 1))] += m;
@@ -89,7 +88,7 @@ function paraQuad(b, kh, kv, W, H) {
   const w = (b.w - av * b.h) / den, h = b.h - ah * w;
   if (w < b.w * 0.4 || h < b.h * 0.25) return null;
   const A = [0, 0], B = [w, w * kh], C = [w + h * kv, w * kh + h], D = [h * kv, h], q = [A, B, C, D], mx = Math.min(...q.map((p) => p[0])), my = Math.min(...q.map((p) => p[1]));
-  const P = q.map(([x, y]) => [b.x + x - mx, b.y + y - my]), cx = P.reduce((s, p) => s + p[0], 0) / 4, cy = P.reduce((s, p) => s + p[1], 0) / 4;
+  const P = q.map(([x, y]) => [b.x + x - mx, b.y + y - my]);
   return P.map(([x, y]) => [Math.min(W, Math.max(0, x)), Math.min(H, Math.max(0, y))]);
 }
 function plateFit(bmp, b) {
