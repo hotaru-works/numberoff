@@ -2,8 +2,11 @@
 // Photos never pass through here; it only caches the app's own files.
 const VERSION = '__BUILD_VERSION__';
 const CACHE = 'numberoff-' + VERSION;
-const CORE = ['./', 'index.html', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png', 'icons/favicon-32.png'];
-const HEAVY = ['model.onnx', 'ort/ort.min.js', 'ort/ort-wasm.wasm', 'ort/ort-wasm-simd.wasm'];
+// the built JS/CSS file names are filled in by vite.config.js at build time
+const ASSETS = [/* __ASSETS__ */];
+const CORE = ['./', 'index.html', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png', 'icons/favicon-32.png', ...ASSETS];
+// the page registers this worker only after the model has loaded, so these come from the browser cache (no second download)
+const HEAVY = ['model.onnx', 'ort/ort.min.js', 'ort/ort-wasm-simd.wasm'];
 
 self.addEventListener('install', e => {
   e.waitUntil((async () => {
