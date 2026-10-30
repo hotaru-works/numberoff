@@ -24,12 +24,18 @@ const CSP = [
   "frame-ancestors 'none'",
 ].join("; ");
 
+const SECURITY = {
+  "Content-Security-Policy": CSP,
+  "X-Content-Type-Options": "nosniff",
+  "Referrer-Policy": "no-referrer",
+  "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=(), usb=()",
+  "X-Frame-Options": "DENY",
+};
+
 const HEADERS = `/*
-  Content-Security-Policy: ${CSP}
-  X-Content-Type-Options: nosniff
-  Referrer-Policy: no-referrer
-  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
-  X-Frame-Options: DENY
+${Object.entries(SECURITY)
+  .map(([k, v]) => `  ${k}: ${v}`)
+  .join("\n")}
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
 /ort/*
@@ -77,7 +83,7 @@ function numberoff() {
       const assets = readdirSync(join(outDir, "assets")).map((f) => `assets/${f}`);
       const hash = createHash("sha256").update(readFileSync(join(outDir, "index.html")));
       for (const a of assets) hash.update(a);
-      if (existsSync(model)) hash.update(String(statSync(model).size));
+      if (existsSync(model)) hash.update(readFileSync(model));
       const ver = hash.digest("hex").slice(0, 10);
       const sw = join(outDir, "sw.js");
       writeFileSync(
@@ -97,6 +103,7 @@ export default defineConfig({
     outDir: "dist",
     emptyOutDir: true,
   },
-  preview: { port: 4173 },
+  // the preview server sends the same security headers as production, so tests catch CSP problems
+  preview: { port: 4173, headers: SECURITY },
   plugins: [numberoff()],
 });

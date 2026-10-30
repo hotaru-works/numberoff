@@ -18,6 +18,6 @@ export default [
   },
   {
     files: ["*.config.js", "tests/**/*.js"],
-    languageOptions: { globals: { ...globals.node } },
+    languageOptions: { globals: { ...globals.node, ...globals.browser } },
   },
 ];

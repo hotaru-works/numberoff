@@ -4,7 +4,8 @@ const VERSION = '__BUILD_VERSION__';
 const CACHE = 'numberoff-' + VERSION;
 // the built JS/CSS file names are filled in by vite.config.js at build time
 const ASSETS = [/* __ASSETS__ */];
-const CORE = ['./', 'index.html', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png', 'icons/favicon-32.png', ...ASSETS];
+// index.html is not listed: Cloudflare Pages redirects it to './', and a redirected response cannot answer a page load
+const CORE = ['./', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png', 'icons/favicon-32.png', ...ASSETS];
 // the page registers this worker only after the model has loaded, so these come from the browser cache (no second download)
 const HEAVY = ['model.onnx', 'ort/ort.min.js', 'ort/ort-wasm-simd.wasm'];
 
@@ -29,12 +30,19 @@ self.addEventListener('fetch', e => {
   if (req.method !== 'GET' || new URL(req.url).origin !== location.origin) return;
   // Pages: network first so updates show up, cache when offline.
   if (req.mode === 'navigate') {
-    e.respondWith(fetch(req).then(r => { const cp = r.clone(); caches.open(CACHE).then(c => c.put('index.html', cp)); return r; })
-      .catch(() => caches.match('index.html')));
+    // only a good, non-redirected copy of the top page may replace the offline copy (never a 404 page)
+    e.respondWith(fetch(req).then(r => {
+      if (r.ok && !r.redirected && new URL(req.url).pathname === new URL('./', location).pathname) {
+        const cp = r.clone();
+        caches.open(CACHE).then(c => c.put('./', cp));
+      }
+      return r;
+    }).catch(() => caches.match('./')));
     return;
   }
   // Everything else: cache first (model and engine are large).
-  e.respondWith(caches.match(req, { ignoreSearch: true }).then(hit => hit || fetch(req).then(r => {
+  // ignoreVary: module scripts are requested with headers (e.g. Origin) that the precache request did not have
+  e.respondWith(caches.match(req, { ignoreSearch: true, ignoreVary: true }).then(hit => hit || fetch(req).then(r => {
     if (r.ok) { const cp = r.clone(); caches.open(CACHE).then(c => c.put(req, cp)); }
     return r;
   })));

@@ -6,6 +6,8 @@ const CAR = fileURLToPath(new URL("./fixtures/car.jpg", import.meta.url));
 test.beforeEach(async ({ page }) => {
   const errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
+  // the preview server sends the production CSP; any violation is a bug
+  page.on("console", (m) => /Content Security Policy/i.test(m.text()) && errors.push(m.text()));
   page.errors = errors;
   // use the plain download path (no Web Share) so the test can catch saved files
   await page.addInitScript(() => {
@@ -53,4 +55,16 @@ test("language can be switched to English", async ({ page }) => {
   await page.click('#lseg [data-l="en"]');
   await page.click("#mclose");
   await expect(page.locator("#s1")).toHaveText("Choose");
+});
+
+test("works offline after the first visit", async ({ page, context }) => {
+  await expect(page.locator("#mst")).toHaveClass("on", { timeout: 60_000 });
+  // the service worker is registered shortly after the model has loaded
+  await page.evaluate(() => navigator.serviceWorker.ready);
+  await context.setOffline(true);
+  await page.reload();
+  await expect(page.locator("#s1")).toHaveText("選ぶ");
+  // the scripts, the runtime and the model all come from the service worker cache
+  await expect(page.locator("#mst")).toHaveClass("on", { timeout: 60_000 });
+  await context.setOffline(false);
 });
