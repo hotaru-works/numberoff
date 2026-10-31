@@ -113,8 +113,8 @@ test("a very large photo is shrunk to the size limit without distortion", async 
 });
 
 test("search and share information is in the page", async ({ page, request }) => {
-  await expect(page.locator('meta[property="og:image"]')).toHaveAttribute("content", "https://numberoff.pages.dev/og.png");
-  expect((await request.get("/og.png")).ok()).toBe(true);
+  await expect(page.locator('meta[property="og:image"]')).toHaveAttribute("content", "https://numberoff.pages.dev/og.jpg");
+  expect((await request.get("/og.jpg")).ok()).toBe(true);
   await expect(page.locator("#about h2")).toBeVisible();
   // the introduction is only on the start screen
   await page.click("#obSkip");
