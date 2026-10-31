@@ -1,4 +1,5 @@
 // 「…」メニュー（言語・画質・形式・ベータ機能）
+import { QL } from "../config.js";
 import { mst } from "../detect/model.js";
 import { $ } from "../dom.js";
 import { i18n } from "../i18n.js";
@@ -23,8 +24,9 @@ $("#menu").onclick = (e) => {
 try {
   const o = JSON.parse(localStorage.getItem("nk_set") || "null");
   if (o) {
-    state.qual = o.q || state.qual;
-    state.fmt = o.f || state.fmt;
+    // values come from storage, so only accept ones the app knows
+    if (o.q in QL) state.qual = o.q;
+    if (["image/jpeg", "image/png", "image/webp"].includes(o.f)) state.fmt = o.f;
     state.dBr = Math.max(-255, Math.min(255, +o.b || 0));
     $("#br").value = state.dBr;
     state.dCl = /^#[0-9a-f]{6}$/i.test(o.c || "") ? o.c : o.p ? "#ffffff" : "auto";

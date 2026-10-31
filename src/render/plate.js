@@ -10,7 +10,13 @@ const isRealPlace = (s) => {
 try {
   state.BETA = localStorage.getItem("nk_beta") == "1";
   const o = JSON.parse(localStorage.getItem("nk_pl") || "null");
-  if (o) state.dPl = { ...PL0, ...o };
+  if (o && typeof o == "object") {
+    // values come from storage: keep only known keys with short string values
+    const p = { ...PL0 };
+    for (const k in PL0) if (typeof o[k] == "string" && o[k].length <= 40) p[k] = o[k];
+    if (!["none", "jp", "us"].includes(p.s)) p.s = PL0.s;
+    state.dPl = p;
+  }
 } catch (_) {
 }
 const PCOL = { jp: { white: ["#f4f4ee", "#1d5a36"], yellow: ["#f2c81c", "#161616"] }, us: { white: ["#f6f6f2", "#1c2f6b", "#b3262d"], yellow: ["#f2c200", "#151515", "#151515"], black: ["#151515", "#f2c200", "#f2c200"] } };

@@ -13,7 +13,8 @@ self.addEventListener('install', e => {
   e.waitUntil((async () => {
     const c = await caches.open(CACHE);
     await c.addAll(CORE);
-    await Promise.all(HEAVY.map(u => c.add(u).catch(() => {})));
+    // 'no-cache' revalidates with the server: an unchanged file is not downloaded again, a changed one is never taken stale from the HTTP cache
+    await Promise.all(HEAVY.map(u => c.add(new Request(u, { cache: 'no-cache' })).catch(() => {})));
     self.skipWaiting();
   })());
 });

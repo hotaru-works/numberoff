@@ -33,6 +33,7 @@ const SECURITY = {
   "Referrer-Policy": "no-referrer",
   "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=(), usb=()",
   "X-Frame-Options": "DENY",
+  "Cross-Origin-Opener-Policy": "same-origin",
 };
 
 const HEADERS = `/*
@@ -42,7 +43,7 @@ ${Object.entries(SECURITY)
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
 /ort/*
-  Cache-Control: public, max-age=31536000, immutable
+  Cache-Control: public, max-age=86400
 /model.onnx
   Cache-Control: public, max-age=86400
 /sw.js
@@ -87,6 +88,7 @@ function numberoff() {
       const hash = createHash("sha256").update(readFileSync(join(outDir, "index.html")));
       for (const a of assets) hash.update(a);
       if (existsSync(model)) hash.update(readFileSync(model));
+      for (const f of ORT_FILES) hash.update(readFileSync(join(outDir, "ort", f)));
       const ver = hash.digest("hex").slice(0, 10);
       const sw = join(outDir, "sw.js");
       writeFileSync(
@@ -95,6 +97,13 @@ function numberoff() {
           .replace("__BUILD_VERSION__", ver)
           .replace("/* __ASSETS__ */", assets.map((a) => JSON.stringify(a)).join(", ")),
       );
+
+      // 5. sitemap: last modified = build date
+      const sitemap = join(outDir, "sitemap.xml");
+      if (existsSync(sitemap)) {
+        const today = new Date().toISOString().slice(0, 10);
+        writeFileSync(sitemap, readFileSync(sitemap, "utf8").replace(/<lastmod>[^<]*<\/lastmod>/, `<lastmod>${today}</lastmod>`));
+      }
       console.log(`numberoff: dist ready (sw version ${ver})`);
     },
   };

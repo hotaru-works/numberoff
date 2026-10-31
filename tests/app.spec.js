@@ -68,3 +68,8 @@ test("works offline after the first visit", async ({ page, context }) => {
   await expect(page.locator("#mst")).toHaveClass("on", { timeout: 60_000 });
   await context.setOffline(false);
 });
+
+test("unknown pages return 404 instead of the app", async ({ page }) => {
+  const r = await page.goto("/no-such-page");
+  expect(r.status()).toBe(404);
+});
