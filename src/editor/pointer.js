@@ -17,6 +17,9 @@ function pt(e) {
 const VW = cv.parentElement;
 VW.onpointerdown = (e) => {
   if (state.cur < 0 || e.target.closest("#zc,#delb,#undo,#redo")) return;
+  // a touch during the zoom animation (right after selecting a plate) ends it at once:
+  // otherwise the finger position is read from a photo that is still moving and the plate jumps
+  if (cv.classList.contains("anim")) cv.classList.remove("anim");
   VW.setPointerCapture(e.pointerId);
   P.set(e.pointerId, [e.clientX, e.clientY]);
   if (P.size > 2) return;
@@ -30,7 +33,7 @@ VW.onpointerdown = (e) => {
     state.g0 = { pan: 1, x: e.clientX, y: e.clientY, tx: state.tx, ty: state.ty };
     return;
   }
-  start(pt(e));
+  start(pt(e), e);
 };
 VW.onpointermove = (e) => {
   if (!P.has(e.pointerId)) return;
@@ -44,6 +47,7 @@ VW.onpointermove = (e) => {
     return;
   }
   if (state.g0 && state.g0.pan) {
+    if (Math.hypot(e.clientX - state.g0.x, e.clientY - state.g0.y) > 6) state.g0.moved = true;
     state.tx = state.g0.tx + e.clientX - state.g0.x;
     state.ty = state.g0.ty + e.clientY - state.g0.y;
     apply();
@@ -57,8 +61,11 @@ VW.onpointermove = (e) => {
 VW.onpointerup = (e) => {
   P.delete(e.pointerId);
   if (state.g0) {
+    const g = state.g0;
     if (P.size < 2) state.g0 = null;
     state.drag = null;
+    // a touch on the photo that did not move is a tap after all
+    if (g.tap && !g.moved && P.size == 0) emptyTap(g.tap);
     return;
   }
   if (!state.drag) return;
@@ -82,7 +89,22 @@ const inCrop = (p) => {
   return p[0] >= x && p[0] <= x + w && p[1] >= y && p[1] <= y + h;
 };
 const cropMode = () => state.panel == "size" && !!state.ratio;
-const hit = (it, p) => it.boxes.findLastIndex((b) => inPoly(b.q, p));
+// a plate under the finger; small plates (a few pixels on a phone) also count when the tap lands just beside them
+function hit(it, p) {
+  const i = it.boxes.findLastIndex((b) => inPoly(b.q, p));
+  // (not while drawing a new mask by hand: a box may start right next to another one)
+  if (i >= 0 || state.mode) return i;
+  const k = it.bmp.width / (cv.getBoundingClientRect().width || 1), tol = 16 * k;
+  let best = -1, bd = tol;
+  it.boxes.forEach((b, j) => {
+    const r = bbq(b.q), dx = Math.max(r.x - p[0], 0, p[0] - r.x - r.w), dy = Math.max(r.y - p[1], 0, p[1] - r.y - r.h), d = Math.hypot(dx, dy);
+    if (d < bd) {
+      bd = d;
+      best = j;
+    }
+  });
+  return best;
+}
 function moved(a, b) {
   const k = cv.parentElement.clientWidth / state.items[state.cur].bmp.width * state.z;
   let m = 0;
@@ -98,7 +120,7 @@ const buzz = () => {
   } catch (_) {
   }
 };
-function start(p) {
+function start(p, e) {
   const it = state.items[state.cur], k = it.bmp.width / (cv.getBoundingClientRect().width || 1);
   if (cropMode()) {
     if (inCrop(p)) state.drag = { m: "c", s: p, cx: it.cx ?? 0.5, cy: it.cy ?? 0.5 };
@@ -152,7 +174,9 @@ function start(p) {
   if (i >= 0) {
     const ns = i != state.sel;
     state.sel = i;
-    state.drag = { m: "m", i, s: p, o: it.boxes[i].q.map((v) => [...v]), mv: false, ns, sn: snap(it) };
+    // on a touch screen the first touch only selects the plate (a small wobble of the finger used to move it);
+    // it can be moved once it is selected. With a mouse it can be dragged right away as before.
+    state.drag = { m: "m", i, s: p, o: it.boxes[i].q.map((v) => [...v]), mv: false, ns, lock: ns && e && e.pointerType != "mouse", sn: snap(it) };
     ui();
     draw();
     return;
@@ -162,6 +186,15 @@ function start(p) {
     draw();
     return;
   }
+  // empty area: when zoomed in, a drag moves the photo (no need for "画像移動"); a tap still deselects / double-tap zooms
+  if (e && state.z > zMin() * 1.01 && !state.mode) {
+    state.g0 = { pan: 1, x: e.clientX, y: e.clientY, tx: state.tx, ty: state.ty, tap: p };
+    return;
+  }
+  emptyTap(p);
+}
+function emptyTap(p) {
+  const it = state.items[state.cur];
   if (state.sel >= 0) {
     state.sel = -1;
     unzoom();
@@ -169,10 +202,10 @@ function start(p) {
     draw();
     return;
   }
-  const now = performance.now(), lt = start.lt;
-  start.lt = { t: now, p };
+  const now = performance.now(), lt = emptyTap.lt;
+  emptyTap.lt = { t: now, p };
   if (lt && now - lt.t < 320 && Math.hypot(lt.p[0] - p[0], lt.p[1] - p[1]) < it.bmp.width * 0.04) {
-    start.lt = null;
+    emptyTap.lt = null;
     const W0 = cv.parentElement.clientWidth, k2 = W0 / it.bmp.width;
     if (state.z > zMin() * 1.05) {
       zr();
@@ -228,7 +261,7 @@ function movedrag(p) {
   if (d.m == "m") {
     const r = bbq(d.o);
     let dx = p[0] - d.s[0], dy = p[1] - d.s[1];
-    if (Math.hypot(dx, dy) * cv.parentElement.clientWidth / W * state.z >= 6) d.mv = true;
+    if (!d.lock && Math.hypot(dx, dy) * cv.parentElement.clientWidth / W * state.z >= 6) d.mv = true;
     if (!d.mv) {
       it.boxes[d.i].q = d.o.map((v) => [...v]);
       return;

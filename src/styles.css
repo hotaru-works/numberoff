@@ -38,7 +38,7 @@ header{display:flex;align-items:center;justify-content:space-between;height:44px
 .tb.add{display:flex;align-items:center;justify-content:center;border:1.5px dashed var(--line);background:none;color:var(--mut)}
 #vw{margin:0 auto;position:relative;overflow:hidden;border-radius:18px;background:var(--soft);line-height:0;box-shadow:var(--sh);padding-bottom:calc(58px*var(--uz,1));touch-action:none}
 canvas{display:block;width:100%;height:auto;touch-action:none;transform-origin:0 0}
-#cw{position:relative;margin:0 auto;overflow:hidden;line-height:0;touch-action:none}
+#cw{position:relative;margin:0 auto;overflow:hidden;line-height:0;touch-action:none;background:#111}
 #zc{position:absolute;right:6px;bottom:6px;display:flex;gap:2px;align-items:center;line-height:1;padding:3px;border-radius:12px;background:rgba(20,20,24,.62);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 #zc button{min-width:34px;min-height:34px;padding:0 8px;border-radius:9px;border:0;background:none;color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:4px}
 #zc button.on{background:var(--ac)}
@@ -210,10 +210,20 @@ body.fs #undo{bottom:calc(12px + env(safe-area-inset-bottom,0px))}
 #hint.sel{justify-content:center}
 #hint.sel>b,#hint.sel>span{display:none}
 body.work:not(.wide) #hint{min-height:40px}
-body.fs #hint #delb{position:fixed;z-index:41;top:calc(10px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);box-shadow:0 4px 18px rgba(0,0,0,.35)}
+body.fs #hint #delb{position:fixed;z-index:41;bottom:calc(64px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);box-shadow:0 4px 18px rgba(0,0,0,.35)}
 
 /* developer link in the "…" menu */
 .dev{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;background:var(--soft);color:var(--fg);text-decoration:none}
 .dev span{display:flex;flex-direction:column;line-height:1.3}
 .dev small{font-size:11px;color:var(--mut);font-weight:600}
 .dev .go{margin-left:auto;color:var(--mut)}
+/* phone: one row under the photo (undo / redo, status or the selected plate's buttons, zoom) */
+#strip{display:none}
+body.strip #strip{position:absolute;left:4px;right:4px;bottom:4px;height:42px;display:flex;align-items:center;gap:4px;line-height:1;z-index:2}
+body.strip #strip>#undo,body.strip #strip>#redo{position:static;transform:none;width:40px;height:40px;flex:none}
+body.strip #strip>#zc{position:static;transform:none;flex:none;margin-left:auto}
+body.strip #strip>#hint{flex:1;min-width:0;height:40px;min-height:0;margin:0 0 0 4px;font-size:13px;white-space:nowrap;overflow:hidden}
+body.strip #hint>span{overflow:hidden;text-overflow:ellipsis}
+body.strip #hint.sel{justify-content:center;margin:0}
+body.strip #zh>span,body.strip #zl{display:none}
+#strip:has(#hint.sel) :is(#zm,#zl,#zp,#zh){display:none}
