@@ -204,15 +204,14 @@ function rdraw() {
 }
 function apply() {
   const v = cv.parentElement, w = v.clientWidth, h = v.clientHeight, it = state.items[state.cur], C = cropView(), zm = zMin();
+  if (!it || !it.bmp) return;
   state.z = Math.min(8 * zm, Math.max(zm, state.z));
-  if (C) {
-    const k = w / it.bmp.width * state.z;
-    state.tx = Math.min(-C[0] * k, Math.max(w - (C[0] + C[2]) * k, state.tx));
-    state.ty = Math.min(-C[1] * k, Math.max(h - (C[1] + C[3]) * k, state.ty));
-  } else {
-    state.tx = Math.min(0, Math.max(w - w * state.z, state.tx));
-    state.ty = Math.min(0, Math.max(h - h * state.z, state.ty));
-  }
+  // keep the shown area (the crop, or the whole photo) inside the viewer; centre it when it is smaller
+  // (it is smaller only in full screen, where the viewer is as tall as the screen)
+  const k = w / it.bmp.width * state.z, [X, Y, CW, CH] = C || [0, 0, it.bmp.width, it.bmp.height];
+  const fit = (t, view, o, len) => len * k <= view ? (view - len * k) / 2 - o * k : Math.min(-o * k, Math.max(view - (o + len) * k, t));
+  state.tx = fit(state.tx, w, X, CW);
+  state.ty = fit(state.ty, h, Y, CH);
   cv.style.transform = `translate(${state.tx}px,${state.ty}px) scale(${state.z})`;
   $("#zl").textContent = Math.round(state.z / zm * 100) + "%";
   placeDel();
@@ -253,6 +252,41 @@ function zoomToBox(b) {
   animT();
   apply();
 }
+// moves to another plate: keeps the current zoom (at least enough to see the plate) and centers it
+function centerBox(b) {
+  const it = state.items[state.cur];
+  if (!b || !it) return;
+  const r = bbq(b.q), W0 = cv.parentElement.clientWidth, H0 = cv.parentElement.clientHeight, k0 = W0 / it.bmp.width, zm = zMin();
+  const nz = Math.max(zm, Math.min(8 * zm, 0.7 * W0 / (r.w * k0), 0.6 * H0 / (r.h * k0)));
+  if (!zprev) zprev = { z: state.z, tx: state.tx, ty: state.ty };
+  state.z = Math.max(state.z, nz);
+  state.tx = W0 / 2 - (r.x + r.w / 2) * k0 * state.z;
+  state.ty = H0 / 2 - (r.y + r.h / 2) * k0 * state.z;
+  animT();
+  apply();
+}
+// plates in reading order (left to right, then top to bottom)
+function stepBox(d) {
+  const it = state.items[state.cur];
+  if (!it || it.boxes.length < 2 || state.sel < 0) return;
+  const o = it.boxes.map((b, i) => [bbq(b.q), i]).sort((a, b) => a[0].x + a[0].w / 2 - (b[0].x + b[0].w / 2) || a[0].y - b[0].y).map((a) => a[1]);
+  const k = o.indexOf(state.sel);
+  state.sel = o[(k + d + o.length) % o.length];
+  state.cf = false;
+  centerBox(it.boxes[state.sel]);
+  draw();
+  document.dispatchEvent(new Event("nk:sel"));
+}
+$("#bprev").onclick = () => stepBox(-1);
+$("#bnext").onclick = () => stepBox(1);
+function setFull(on) {
+  document.body.classList.toggle("fs", on);
+  $("#fs").setAttribute("aria-label", on ? "全画面を閉じる" : "全画面");
+  fitView();
+  zr();
+  draw();
+}
+$("#fs").onclick = () => setFull(!document.body.classList.contains("fs"));
 function unzoom() {
   if (!zprev) return;
   state.z = zprev.z;
@@ -271,6 +305,7 @@ function placeDel() {
   }
   $("#delq").hidden = !state.cf;
   $("#deln").hidden = !state.cf;
+  $("#bprev").hidden = $("#bnext").hidden = state.cf || it.boxes.length < 2;
   $("#decb").hidden = state.cf;
   $("#dely").className = state.cf ? "x" : "";
   $("#dely").innerHTML = state.cf ? tr("削除") : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4.5h6V7M6.5 7l1 12.5h9l1-12.5"/></svg>';
@@ -305,6 +340,16 @@ function fitView() {
     return;
   }
   const C = cropView(), asp = C ? C[2] / C[3] : it.bmp.width / it.bmp.height;
+  if (document.body.classList.contains("fs")) {
+    // full screen: as large as the screen allows
+    // the viewer is as tall as the screen, so a zoomed photo can use all of it
+    const W = innerWidth, H = v.parentElement.clientHeight;
+    v.parentElement.style.paddingTop = "";
+    v.style.maxWidth = v.style.width = Math.floor(Math.min(W, H * asp)) + "px";
+    v.style.height = H + "px";
+    return;
+  }
+  v.style.width = "";
   // the viewer takes the crop's shape (its height follows its width)
   const setH = () => v.style.height = C ? Math.round(v.clientWidth / asp) + "px" : "";
   if (document.body.classList.contains("work") && !document.body.classList.contains("wide")) {
@@ -397,6 +442,8 @@ cv.parentElement.addEventListener("wheel", (e) => {
 }, { passive: false });
 export {
   animT,
+  setFull,
+  stepBox,
   cropView,
   zMin,
   apply,

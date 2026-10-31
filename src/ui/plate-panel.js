@@ -75,8 +75,8 @@ function plUI() {
       e.classList.remove("bad");
     }
   }
-  // one plate is edited when it is selected; otherwise every plate in the photo that has no setting of its own
-  $("#plNote").textContent = tr(b ? "このナンバーだけ" : it && it.boxes.length > 1 ? "ナンバーをタップすると1枚ずつ変えられます" : "この写真のナンバーすべて");
+  // a selected plate is edited alone (tap a plate, or ‹ ›); otherwise every plate without its own setting
+  $("#plNote").textContent = b ? tr("このナンバーだけ") : "";
   $("#plAll").hidden = !(b && b.pl);
   plPrev();
 }

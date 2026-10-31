@@ -150,3 +150,15 @@ test("after choosing a size, editing shows only the cropped area", async ({ page
   const r2 = await page.locator("#cw").boundingBox();
   expect(Math.abs(r2.width / r2.height - 1.5)).toBeLessThan(0.02);
 });
+
+test("full screen button shows the photo over the whole screen", async ({ page }) => {
+  await page.click("#obSkip");
+  await page.setInputFiles("#pick", CAR);
+  await expect(page.locator("#busy")).toBeHidden({ timeout: 60_000 });
+  await page.click("#fs");
+  const vp = page.viewportSize(), r = await page.locator("#vw").boundingBox();
+  expect(Math.round(r.width)).toBe(vp.width);
+  expect(Math.round(r.height)).toBe(vp.height);
+  await page.click("#fs");
+  await expect(page.locator("body")).not.toHaveClass(/\bfs\b/);
+});

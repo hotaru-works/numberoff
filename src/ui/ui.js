@@ -13,6 +13,7 @@ import { plUI } from "./plate-panel.js";
   ui();
 }).catch(() => {
 });
+document.addEventListener("nk:sel", () => ui());
 function thumb(it) {
   const c = document.createElement("canvas"), k = 112 / Math.min(it.bmp.width, it.bmp.height);
   c.width = Math.round(it.bmp.width * k);
