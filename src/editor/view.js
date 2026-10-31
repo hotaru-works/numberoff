@@ -209,7 +209,9 @@ function apply() {
   // keep the shown area (the crop, or the whole photo) inside the viewer; centre it when it is smaller
   // (it is smaller only in full screen, where the viewer is as tall as the screen)
   const k = w / it.bmp.width * state.z, [X, Y, CW, CH] = C || [0, 0, it.bmp.width, it.bmp.height];
-  const fit = (t, view, o, len) => len * k <= view ? (view - len * k) / 2 - o * k : Math.min(-o * k, Math.max(view - (o + len) * k, t));
+  // while a plate is selected the photo may move a little past its edge, so a plate at the edge can come to the middle (its corners are then easy to reach)
+  const sl = state.sel >= 0 && state.z > zm * 1.01 ? 0.35 : 0;
+  const fit = (t, view, o, len) => len * k <= view ? (view - len * k) / 2 - o * k : Math.min(-o * k + sl * view, Math.max(view - (o + len) * k - sl * view, t));
   state.tx = fit(state.tx, w, X, CW);
   state.ty = fit(state.ty, h, Y, CH);
   cv.style.transform = `translate(${state.tx}px,${state.ty}px) scale(${state.z})`;

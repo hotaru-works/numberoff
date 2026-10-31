@@ -38,7 +38,7 @@ header{display:flex;align-items:center;justify-content:space-between;height:44px
 .tb.add{display:flex;align-items:center;justify-content:center;border:1.5px dashed var(--line);background:none;color:var(--mut)}
 #vw{margin:0 auto;position:relative;overflow:hidden;border-radius:18px;background:var(--soft);line-height:0;box-shadow:var(--sh);padding-bottom:calc(58px*var(--uz,1));touch-action:none}
 canvas{display:block;width:100%;height:auto;touch-action:none;transform-origin:0 0}
-#cw{position:relative;margin:0 auto;overflow:hidden;line-height:0;touch-action:none}
+#cw{position:relative;margin:0 auto;overflow:hidden;line-height:0;touch-action:none;background:#111}
 #zc{position:absolute;right:6px;bottom:6px;display:flex;gap:2px;align-items:center;line-height:1;padding:3px;border-radius:12px;background:rgba(20,20,24,.62);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 #zc button{min-width:34px;min-height:34px;padding:0 8px;border-radius:9px;border:0;background:none;color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:4px}
 #zc button.on{background:var(--ac)}
