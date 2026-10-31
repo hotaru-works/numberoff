@@ -4,6 +4,8 @@ NumberOFF の主な変更点です。書き方は [Keep a Changelog](https://kee
 
 ## [未リリース]
 
+## [1.4.2] - 2026-10-31
+
 ### 追加
 - 写真の右下に全画面ボタン。全画面でも拡大・ナンバーの調整ができる
 - ナンバーを選んでいるときは「‹ ›」（PC では ← →）で隣のナンバーに移れる（ナンバーが1枚の写真では薄く表示）
@@ -72,7 +74,8 @@ GitHub での最初の公開版です。
 - 日本語・英語に対応、ホーム画面に追加してオフラインでも使える
 - アプリ内ブラウザで開いたときに、普通のブラウザで開くよう案内
 
-[未リリース]: https://github.com/hotaru-works/numberoff/compare/v1.4.1...HEAD
+[未リリース]: https://github.com/hotaru-works/numberoff/compare/v1.4.2...HEAD
+[1.4.2]: https://github.com/hotaru-works/numberoff/compare/v1.4.1...v1.4.2
 [1.4.1]: https://github.com/hotaru-works/numberoff/compare/v1.4.0...v1.4.1
 [1.4.0]: https://github.com/hotaru-works/numberoff/compare/v1.3.1...v1.4.0
 [1.3.1]: https://github.com/hotaru-works/numberoff/releases/tag/v1.3.1
