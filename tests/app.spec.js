@@ -132,3 +132,47 @@ test.describe("search engine crawler", () => {
     await expect(page.locator("html")).toHaveAttribute("lang", "ja");
   });
 });
+
+test("after choosing a size, editing shows only the cropped area", async ({ page }) => {
+  await page.click("#obSkip");
+  await page.setInputFiles("#pick", CAR);
+  await expect(page.locator("#busy")).toBeHidden({ timeout: 60_000 });
+  await page.click("#tSize");
+  await page.click('#chips [data-r="4:5"]');
+  // OK finishes resizing
+  await page.click("#go");
+  const r = await page.locator("#cw").boundingBox();
+  expect(Math.abs(r.width / r.height - 0.8)).toBeLessThan(0.02);
+  // back to the original size: the whole photo again (1200x800)
+  await page.click("#tSize");
+  await page.click('#chips [data-r=""]');
+  await page.click("#tSize");
+  const r2 = await page.locator("#cw").boundingBox();
+  expect(Math.abs(r2.width / r2.height - 1.5)).toBeLessThan(0.02);
+});
+
+test("full screen button shows the photo over the whole screen", async ({ page }) => {
+  await page.click("#obSkip");
+  await page.setInputFiles("#pick", CAR);
+  await expect(page.locator("#busy")).toBeHidden({ timeout: 60_000 });
+  await page.click("#fs");
+  const vp = page.viewportSize(), r = await page.locator("#vw").boundingBox();
+  expect(Math.round(r.width)).toBe(vp.width);
+  expect(Math.round(r.height)).toBe(vp.height);
+  await page.click("#fs");
+  await expect(page.locator("body")).not.toHaveClass(/\bfs\b/);
+});
+
+test("a window height change (phone keyboard) keeps the zoom", async ({ page }) => {
+  await page.click("#obSkip");
+  await page.setInputFiles("#pick", CAR);
+  await expect(page.locator("#busy")).toBeHidden({ timeout: 60_000 });
+  await page.click("#zp");
+  const z0 = await page.locator("#zl").textContent();
+  const vp = page.viewportSize();
+  await page.setViewportSize({ width: vp.width, height: Math.round(vp.height * 0.6) });
+  await page.waitForTimeout(400);
+  await page.setViewportSize(vp);
+  await page.waitForTimeout(400);
+  await expect(page.locator("#zl")).toHaveText(z0);
+});

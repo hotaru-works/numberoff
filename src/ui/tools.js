@@ -155,6 +155,8 @@ $("#go").onclick = () => {
   state.sel = -1;
   unzoom();
   state.mode = "";
+  // OK finishes resizing: from here on the photo is shown cropped
+  if (state.panel == "size") state.panel = "";
   const it = state.items[state.cur];
   if (!it.ok) it.ok = true;
   const n = nextIdx();

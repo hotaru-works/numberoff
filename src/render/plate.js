@@ -25,14 +25,26 @@ const plEff = (it, b) => {
   const p = b && b.pl || it.pl || state.dPl;
   return p && p.s != "none" ? p : null;
 };
-const plKey = (p) => p ? [p.s, p.col, p.s == "jp" ? [p.r, p.c, p.k, p.n].join("/") : [p.t, p.m].join("/")].join("|") : "";
+// plate colors from the "色" tool: a light plate keeps the usual dark lettering,
+// a yellow plate gets black, a dark plate gets light lettering
+function palFor(s, hex) {
+  const n = parseInt(hex.slice(1), 16), r = n >> 16 & 255, g = n >> 8 & 255, b = n & 255;
+  const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  const yellow = r > 180 && g > 140 && b < 120 && mx - mn > 90;
+  if (yellow) return [hex, "#161616", "#151515"];
+  if (l > 0.62) return s == "jp" ? [hex, "#1d5a36"] : [hex, "#1c2f6b", "#b3262d"];
+  if (l < 0.38) return [hex, "#f2f2ee", s == "us" ? "#f2c200" : "#f2f2ee"];
+  return [hex, "#111114", "#111114"];
+}
+const plCol = (p, cl) => p && cl && cl != "auto" ? { ...p, bg: cl } : p;
+const plKey = (p) => p ? [p.s, p.bg || "", p.col, p.s == "jp" ? [p.r, p.c, p.k, p.n].join("/") : [p.t, p.m].join("/")].join("|") : "";
 const PFONT = '"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic","Meiryo",system-ui,sans-serif';
 function plateTex(p, W) {
   const H = Math.round(W / 2), c = document.createElement("canvas");
   c.width = W;
   c.height = H;
   const g = c.getContext("2d"), u = H / 100;
-  const pal = (PCOL[p.s] || PCOL.us)[p.col] || (PCOL[p.s] || PCOL.us)[Object.keys(PCOL[p.s] || PCOL.us)[0]];
+  const pal = p.bg ? palFor(p.s, p.bg) : (PCOL[p.s] || PCOL.us).white;
   const rr = (x, y, w, h, r) => {
     g.beginPath();
     g.roundRect(x, y, w, h, r);
@@ -154,6 +166,7 @@ export {
   isRealPlace,
   plEff,
   plKey,
+  plCol,
   plateTexC,
   warpTo
 };

@@ -1,7 +1,7 @@
 // キーボード操作（PC）
 import { $ } from "./dom.js";
 import { pushHist } from "./editor/history.js";
-import { draw, unzoom, vc, zoomAt } from "./editor/view.js";
+import { draw, setFull, stepBox, unzoom, vc, zoomAt } from "./editor/view.js";
 import { tr } from "./i18n.js";
 import { state } from "./state.js";
 import { mClose } from "./ui/menu.js";
@@ -37,7 +37,9 @@ document.addEventListener("keydown", (e) => {
     return;
   }
   if (k == "Escape") {
-    if (state.sel >= 0) {
+    if (document.body.classList.contains("fs")) {
+      setFull(false);
+    } else if (state.sel >= 0) {
       $("#decb").click();
     } else if (state.mode) {
       state.mode = "";
@@ -54,6 +56,12 @@ document.addEventListener("keydown", (e) => {
     e.preventDefault();
     if (state.sel >= 0) $("#decb").click();
     else if (!$("#go").hidden) $("#go").click();
+    return;
+  }
+  // a plate is selected: the arrows move to the neighbouring plate
+  if ((k == "ArrowRight" || k == "ArrowLeft") && !m && state.sel >= 0) {
+    e.preventDefault();
+    stepBox(k == "ArrowRight" ? 1 : -1);
     return;
   }
   if (k == "ArrowRight" && !m && state.sel < 0) {

@@ -118,7 +118,8 @@ body:not(.beta) #tPl{display:none}.tl sup{font-size:8px;margin-left:1px;color:va
 body.beta #dock #tools{display:flex;overflow-x:auto;scrollbar-width:none;gap:0}body.beta #dock #tools::-webkit-scrollbar{display:none}body.beta #dock .tl{flex:0 0 max(60px,16.66%)}body.beta.wide #tools{grid-template-columns:repeat(6,1fr)}
 .plt{display:flex;gap:10px;align-items:center}#plPrev{width:96px;height:48px;flex:none;border-radius:6px}.plt .seg{flex:1}.plt .seg button{white-space:nowrap;font-size:12.5px}
 .plf{display:grid;grid-template-columns:2fr 1fr;gap:6px;margin-top:8px}#plJP{grid-template-columns:1.6fr 1fr .7fr 1.6fr}.plf input{min-width:0;height:38px;border:1.5px solid var(--line);border-radius:10px;background:var(--soft);color:var(--fg);font:700 14px inherit;font-family:inherit;padding:0 8px;text-align:center}
-.plf input:focus{outline:none;border-color:var(--ac)}.plf input.bad{border-color:var(--dang)}.plb{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px}.plb .cseg{display:flex;gap:8px}.plb .cseg>*{flex:none;width:28px;height:28px;border-radius:50%;border:0;padding:0;background:var(--c);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--fg) 22%,transparent)}.plb .cseg>.on{box-shadow:0 0 0 2px var(--card),0 0 0 4px var(--fg)}.pln{font-size:11px;font-weight:700;color:var(--mut);text-align:right}
+.plf input:focus{outline:none;border-color:var(--ac)}.plf input.bad{border-color:var(--dang)}.plb{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px}.plb .cseg{display:flex;gap:8px}.plb .cseg>*{flex:none;width:28px;height:28px;border-radius:50%;border:0;padding:0;background:var(--c);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--fg) 22%,transparent)}.plb .cseg>.on{box-shadow:0 0 0 2px var(--card),0 0 0 4px var(--fg)}.pln{font-size:11px;font-weight:700;color:var(--mut);text-align:right;margin-left:auto}
+.pla{min-height:28px;font-size:11px;padding:0 2px;flex:none}
 #cseg>.on{box-shadow:0 0 0 2px var(--card),0 0 0 4px var(--fg)}
 
 body.wide main{max-width:1440px;padding:18px 32px calc(100px + env(safe-area-inset-bottom,0px))}
@@ -190,3 +191,23 @@ body:not(.wide) #vw{padding-bottom:50px}body:not(.wide) #th{padding-bottom:8px}b
 #about dl{margin:0}
 #about dt{margin-top:10px;color:var(--fg);font-weight:700}
 #about dd{margin:2px 0 0}
+
+/* plate arrows in the selection toolbar */
+#delb #bprev,#delb #bnext{min-width:30px;padding:0 4px;background:none}
+#delb #bprev:disabled,#delb #bnext:disabled{opacity:.3}
+/* full screen: the photo fills the screen; zoom, undo and the selection toolbar stay */
+#fs .fs-off,body.fs #fs .fs-on{display:none}
+body.fs #fs .fs-off{display:inline}
+body.fs{overflow:hidden}
+/* (!important: the phone and PC layouts style #vw with more specific selectors) */
+body.fs #vw{position:fixed!important;inset:0!important;z-index:40;margin:0!important;width:100%!important;max-width:none!important;height:100%!important;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)!important;border-radius:0!important;background:#000!important;box-shadow:none!important;display:flex!important;align-items:center;justify-content:center;zoom:1!important}
+body.fs #cw{flex:none;margin:0}
+body.fs #zc{right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px))}
+body.fs #undo{bottom:calc(12px + env(safe-area-inset-bottom,0px))}
+
+/* selected plate toolbar: in the line under the photo (replaces the "N hidden" text while a plate is selected) */
+#hint #delb{position:static;transform:none;margin:0 auto;padding:2px;box-shadow:none}
+#hint.sel{justify-content:center}
+#hint.sel>b,#hint.sel>span{display:none}
+body.work:not(.wide) #hint{min-height:40px}
+body.fs #hint #delb{position:fixed;z-index:41;top:calc(10px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);box-shadow:0 4px 18px rgba(0,0,0,.35)}

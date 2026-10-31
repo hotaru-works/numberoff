@@ -3,11 +3,11 @@ import { $ } from "../dom.js";
 import { pushHist } from "../editor/history.js";
 import { draw, rdraw } from "../editor/view.js";
 import { tr } from "../i18n.js";
-import { PCOL, isRealPlace, plateTexC } from "../render/plate.js";
+import { isRealPlace, plCol, plateTexC } from "../render/plate.js";
 import { state } from "../state.js";
 import { msg } from "./toast.js";
 import { ui } from "./ui.js";
-let plG = false;
+let plG = false, plT = null;
 const plShown = () => {
   const it = state.items[state.cur];
   if (!it) return state.dPl;
@@ -23,6 +23,12 @@ const savePl = () => {
 function plEdit(fn) {
   const it = state.items[state.cur];
   if (!it) return;
+  const b0 = state.sel >= 0 && it.boxes[state.sel], tgt = b0 || it;
+  // a different plate (or the whole photo) starts a new undo step
+  if (tgt !== plT) {
+    plT = tgt;
+    plG = false;
+  }
   if (!plG) {
     pushHist(it);
     plG = true;
@@ -53,7 +59,8 @@ function plPrev() {
     g.globalAlpha = 1;
     return;
   }
-  g.drawImage(plateTexC(p, 240), 0, 0);
+  const it = state.items[state.cur];
+  g.drawImage(plateTexC(plCol(p, it ? it.cl ?? state.dCl : state.dCl), 240), 0, 0);
 }
 function plUI() {
   const p = plShown(), it = state.items[state.cur], b = it && state.sel >= 0 && it.boxes[state.sel];
@@ -68,24 +75,15 @@ function plUI() {
       e.classList.remove("bad");
     }
   }
-  const cols = p.s == "none" ? [] : Object.keys(PCOL[p.s]), pc = $("#plcol"), sig = p.s + "|" + p.col;
-  if (pc.dataset.sig !== sig) {
-    pc.dataset.sig = sig;
-    pc.innerHTML = cols.map((k) => `<button data-k="${k}" class="${k == p.col ? "on" : ""}" style="--c:${PCOL[p.s][k][0]}" aria-label="${tr({ white: "白", yellow: "黄", black: "黒" }[k])}"></button>`).join("");
-    pc.querySelectorAll("button").forEach((x) => x.onclick = () => {
-      plG = false;
-      plEdit((q) => q.col = x.dataset.k);
-    });
-  }
-  $("#plNote").textContent = p.s == "none" ? "" : tr(b ? "このナンバーだけ" : "この写真のナンバーすべて");
+  // a selected plate is edited alone (tap a plate, or ‹ ›); otherwise every plate without its own setting
+  $("#plNote").textContent = b ? tr("このナンバーだけ") : "";
+  $("#plAll").hidden = !(b && b.pl);
   plPrev();
 }
 document.querySelectorAll("#plseg button").forEach((x) => x.onclick = () => {
   plG = false;
   plEdit((q) => {
     q.s = x.dataset.s;
-    const ks = q.s == "none" ? null : Object.keys(PCOL[q.s]);
-    if (ks && !ks.includes(q.col)) q.col = ks[0];
   });
   plG = false;
 });
@@ -112,6 +110,16 @@ document.querySelectorAll("#plseg button").forEach((x) => x.onclick = () => {
     };
   }
 }
+$("#plAll").onclick = () => {
+  const it = state.items[state.cur], b = it && state.sel >= 0 && it.boxes[state.sel];
+  if (!b || !b.pl) return;
+  pushHist(it);
+  delete b.pl;
+  plG = false;
+  it.ok = false;
+  ui();
+  rdraw();
+};
 $("#betaPl").checked = state.BETA;
 document.body.classList.toggle("beta", state.BETA);
 $("#betaPl").onchange = (e) => {
