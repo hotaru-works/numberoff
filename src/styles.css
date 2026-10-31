@@ -172,3 +172,15 @@ body.work:not(.wide){overflow:hidden;overscroll-behavior:none}body.work:not(.wid
 body.work:not(.wide) #work{flex:1;min-height:0;display:flex;flex-direction:column}body.work:not(.wide) #vw{margin:auto;width:100%;flex:none;background:none;box-shadow:none}body.work:not(.wide) #th{flex:none}body.work:not(.wide) #hint{flex:none;margin:6px 2px 8px}body.work:not(.wide) header{height:38px}
 body:not(.wide) #bar{padding-top:8px;padding-bottom:calc(8px + env(safe-area-inset-bottom,0px))}body:not(.wide) .bb{min-height:48px}
 body:not(.wide) #vw{padding-bottom:50px}body:not(.wide) #th{padding-bottom:8px}body:not(.wide) #hint{margin-top:8px}
+
+/* 紹介文（スタート画面の下。検索エンジンと初めての人向け） */
+#about{width:100%;margin-top:28px;padding:22px 4px 8px;border-top:1px solid var(--line);color:var(--mut);font-size:13.5px;line-height:1.75}
+#about h2{margin:0 0 8px;color:var(--fg);font-size:16px;line-height:1.5}
+#about h3{margin:22px 0 6px;color:var(--fg);font-size:14px}
+#about p{margin:0}
+#about ul,#about ol{margin:0;padding-left:1.3em}
+#about li{margin:4px 0}
+#about li b{display:block;color:var(--fg);font-weight:700}
+#about dl{margin:0}
+#about dt{margin-top:10px;color:var(--fg);font-weight:700}
+#about dd{margin:2px 0 0}

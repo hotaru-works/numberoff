@@ -7,6 +7,8 @@ const state = {
       if (v) return v;
     } catch (_) {
     }
+    // search engine crawlers run in English; keep them on the Japanese page so it is indexed in Japanese
+    if (/bot|crawl|spider|slurp|lighthouse/i.test(navigator.userAgent)) return "ja";
     return /^ja/i.test(navigator.language || "ja") ? "ja" : "en";
   })(),
   items: [],

@@ -111,3 +111,21 @@ test("a very large photo is shrunk to the size limit without distortion", async 
   expect(w * h).toBeGreaterThan(15e6);
   expect(Math.abs(w / h - 1.5)).toBeLessThan(0.01);
 });
+
+test("search and share information is in the page", async ({ page, request }) => {
+  await expect(page.locator('meta[property="og:image"]')).toHaveAttribute("content", "https://numberoff.pages.dev/og.png");
+  expect((await request.get("/og.png")).ok()).toBe(true);
+  await expect(page.locator("#about h2")).toBeVisible();
+  // the introduction is only on the start screen
+  await page.click("#obSkip");
+  await page.setInputFiles("#pick", CAR);
+  await expect(page.locator("#about")).toBeHidden();
+});
+
+test.describe("search engine crawler", () => {
+  test.use({ locale: "en-US", userAgent: "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)" });
+  test("sees the Japanese page", async ({ page }) => {
+    await expect(page).toHaveTitle("NumberOFF｜写真のナンバープレートを自動で隠す無料Webアプリ");
+    await expect(page.locator("html")).toHaveAttribute("lang", "ja");
+  });
+});
