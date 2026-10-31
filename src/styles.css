@@ -173,8 +173,14 @@ body.work:not(.wide) #work{flex:1;min-height:0;display:flex;flex-direction:colum
 body:not(.wide) #bar{padding-top:8px;padding-bottom:calc(8px + env(safe-area-inset-bottom,0px))}body:not(.wide) .bb{min-height:48px}
 body:not(.wide) #vw{padding-bottom:50px}body:not(.wide) #th{padding-bottom:8px}body:not(.wide) #hint{margin-top:8px}
 
-/* 紹介文（スタート画面の下。検索エンジンと初めての人向け） */
-#about{width:100%;margin-top:28px;padding:22px 4px 8px;border-top:1px solid var(--line);color:var(--mut);font-size:13.5px;line-height:1.75}
+/* 紹介文（スタート画面の下。たたんで表示し、検索エンジンと知りたい人向けに中身はHTMLに置く） */
+#about{width:100%;margin-top:2px;color:var(--mut);font-size:13.5px;line-height:1.75}
+#about summary{list-style:none;width:max-content;margin:0 auto;padding:8px 6px;color:var(--mut);font-size:12px;font-weight:600;cursor:pointer;opacity:.8}
+#about summary::-webkit-details-marker{display:none}
+#about summary::after{content:"";display:inline-block;width:6px;height:6px;margin:0 0 2px 7px;border:solid currentColor;border-width:0 1.5px 1.5px 0;transform:rotate(45deg);transition:transform .2s}
+#about[open] summary::after{transform:rotate(-135deg);margin-bottom:-1px}
+#about[open]{padding-bottom:8px}
+#about[open] summary{margin-bottom:14px}
 #about h2{margin:0 0 8px;color:var(--fg);font-size:16px;line-height:1.5}
 #about h3{margin:22px 0 6px;color:var(--fg);font-size:14px}
 #about p{margin:0}
