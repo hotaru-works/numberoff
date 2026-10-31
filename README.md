@@ -12,6 +12,10 @@ https://numberoff.pages.dev/
 
 隠し漏れが生じる場合があります。公開・共有の前に必ずご自身で確認してください。
 
+## 更新履歴
+
+[CHANGELOG.md](CHANGELOG.md) を参照してください。
+
 ## 開発
 
 Node.js 22 以上が必要です。
