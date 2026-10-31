@@ -115,7 +115,10 @@ test("a very large photo is shrunk to the size limit without distortion", async 
 test("search and share information is in the page", async ({ page, request }) => {
   await expect(page.locator('meta[property="og:image"]')).toHaveAttribute("content", "https://numberoff.pages.dev/og.jpg");
   expect((await request.get("/og.jpg")).ok()).toBe(true);
-  await expect(page.locator("#about h2")).toBeVisible();
+  // folded by default: the text is in the HTML for search engines, the start screen stays quiet
+  await expect(page.locator("#about summary")).toBeVisible();
+  await expect(page.locator("#about h2")).toBeHidden();
+  await expect(page.locator("#about h2")).toHaveText("写真のナンバープレートを、自動で隠す無料Webアプリ");
   // the introduction is only on the start screen
   await page.click("#obSkip");
   await page.setInputFiles("#pick", CAR);
