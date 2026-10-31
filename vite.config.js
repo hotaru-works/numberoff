@@ -9,12 +9,15 @@ const ORT_FILES = ["ort.min.js", "ort-wasm.wasm", "ort-wasm-simd.wasm"];
 const MAX_FILE = 25 * 1024 * 1024; // Cloudflare Pages per-file limit
 
 // CSP: only this site may be contacted, so photos physically cannot be sent anywhere.
+// The one exception is Cloudflare Web Analytics (visit counts only; it never sees photos).
+const ANALYTICS_SCRIPT = "https://static.cloudflareinsights.com";
+const ANALYTICS_REPORT = "https://cloudflareinsights.com";
 const CSP = [
   "default-src 'self'",
-  "script-src 'self' 'wasm-unsafe-eval'",
+  `script-src 'self' 'wasm-unsafe-eval' ${ANALYTICS_SCRIPT}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
-  "connect-src 'self'",
+  `connect-src 'self' ${ANALYTICS_REPORT}`,
   "worker-src 'self'",
   "manifest-src 'self'",
   "font-src 'self'",
