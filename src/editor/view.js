@@ -305,7 +305,9 @@ function placeDel() {
   }
   $("#delq").hidden = !state.cf;
   $("#deln").hidden = !state.cf;
-  $("#bprev").hidden = $("#bnext").hidden = state.cf || it.boxes.length < 2;
+  // ‹ › are always there while a plate is selected; with a single plate they are dimmed
+  $("#bprev").hidden = $("#bnext").hidden = state.cf;
+  $("#bprev").disabled = $("#bnext").disabled = it.boxes.length < 2;
   $("#decb").hidden = state.cf;
   $("#dely").className = state.cf ? "x" : "";
   $("#dely").innerHTML = state.cf ? tr("削除") : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4.5h6V7M6.5 7l1 12.5h9l1-12.5"/></svg>';

@@ -194,6 +194,7 @@ body:not(.wide) #vw{padding-bottom:50px}body:not(.wide) #th{padding-bottom:8px}b
 
 /* plate arrows in the selection toolbar */
 #delb #bprev,#delb #bnext{min-width:30px;padding:0 4px;background:none}
+#delb #bprev:disabled,#delb #bnext:disabled{opacity:.3}
 /* full screen: the photo fills the screen; zoom, undo and the selection toolbar stay */
 #fs .fs-off,body.fs #fs .fs-on{display:none}
 body.fs #fs .fs-off{display:inline}
