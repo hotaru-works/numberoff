@@ -210,7 +210,7 @@ body.fs #undo{bottom:calc(12px + env(safe-area-inset-bottom,0px))}
 #hint.sel{justify-content:center}
 #hint.sel>b,#hint.sel>span{display:none}
 body.work:not(.wide) #hint{min-height:40px}
-body.fs #hint #delb{position:fixed;z-index:41;top:calc(10px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);box-shadow:0 4px 18px rgba(0,0,0,.35)}
+body.fs #hint #delb{position:fixed;z-index:41;bottom:calc(64px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);box-shadow:0 4px 18px rgba(0,0,0,.35)}
 
 /* developer link in the "…" menu */
 .dev{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;background:var(--soft);color:var(--fg);text-decoration:none}
