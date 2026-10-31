@@ -204,3 +204,10 @@ body.fs #vw{position:fixed!important;inset:0!important;z-index:40;margin:0!impor
 body.fs #cw{flex:none;margin:0}
 body.fs #zc{right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px))}
 body.fs #undo{bottom:calc(12px + env(safe-area-inset-bottom,0px))}
+
+/* selected plate toolbar: in the line under the photo (replaces the "N hidden" text while a plate is selected) */
+#hint #delb{position:static;transform:none;margin:0 auto;padding:2px;box-shadow:none}
+#hint.sel{justify-content:center}
+#hint.sel>b,#hint.sel>span{display:none}
+body.work:not(.wide) #hint{min-height:40px}
+body.fs #hint #delb{position:fixed;z-index:41;top:calc(10px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);box-shadow:0 4px 18px rgba(0,0,0,.35)}

@@ -66,9 +66,9 @@ function ui() {
   if (it) {
     const b = it.boxes.length, h = $("#hint");
     const busy = (it.st == "wait" || it.st == "run") && !b;
-    h.className = busy ? "run" : "ok";
+    h.className = (busy ? "run" : "ok") + (state.sel >= 0 && it.boxes[state.sel] && !cropMode() ? " sel" : "");
     h.style.visibility = b || busy ? "" : "hidden";
-    h.lastChild.textContent = busy ? tr("ナンバーを検出中…") : b ? tr("{n}か所 隠し済み", { n: b }) : "";
+    h.querySelector(":scope>span").textContent = busy ? tr("ナンバーを検出中…") : b ? tr("{n}か所 隠し済み", { n: b }) : "";
     $("#go").hidden = all;
     $("#go").innerHTML = it.ok ? `${tr("次へ")}${IC.next}` : state.items.length - n > 1 ? `OK${IC.next}` : `${IC.check}OK`;
     $("#sv").hidden = false;

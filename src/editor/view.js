@@ -243,7 +243,7 @@ function zoomToBox(b) {
   const it = state.items[state.cur];
   if (!b || !it) return;
   const r = bbq(b.q), W0 = cv.parentElement.clientWidth, H0 = cv.parentElement.clientHeight, k0 = W0 / it.bmp.width, zm = zMin();
-  const room = Math.min(0.3, 64 * UZ() / H0), rb = Math.min(0.25, 52 * UZ() / H0), nz = Math.max(zm, Math.min(8 * zm, 0.7 * W0 / (r.w * k0), (0.86 - room - rb) * H0 / (r.h * k0)));
+  const room = Math.min(0.3, 12 * UZ() / H0), rb = Math.min(0.25, 52 * UZ() / H0), nz = Math.max(zm, Math.min(8 * zm, 0.7 * W0 / (r.w * k0), (0.86 - room - rb) * H0 / (r.h * k0)));
   if (nz <= state.z * 1.05 && state.z > zm) return;
   if (!zprev) zprev = { z: state.z, tx: state.tx, ty: state.ty };
   state.z = Math.max(state.z, nz);
@@ -296,10 +296,13 @@ function unzoom() {
   animT();
   apply();
 }
+// the toolbar of the selected plate (‹ 決定 🗑 ›) sits in the line under the photo, never over it,
+// so it cannot cover a corner that is about to be dragged (full screen: at the top of the screen)
 function placeDel() {
-  const it = state.items[state.cur], d = $("#delb"), b = it && it.boxes[state.sel] && bbq(it.boxes[state.sel].q);
-  if (!b || state.drag || cropMode()) {
+  const it = state.items[state.cur], d = $("#delb"), b = it && it.boxes[state.sel];
+  if (!b || cropMode()) {
     d.hidden = true;
+    $("#hint").classList.remove("sel");
     state.cf = false;
     return;
   }
@@ -312,14 +315,7 @@ function placeDel() {
   $("#dely").className = state.cf ? "x" : "";
   $("#dely").innerHTML = state.cf ? tr("削除") : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4.5h6V7M6.5 7l1 12.5h9l1-12.5"/></svg>';
   d.hidden = false;
-  const v = cv.parentElement, w = v.clientWidth, h = v.clientHeight, k = w / it.bmp.width * state.z, u = UZ(), dw = d.offsetWidth, dh = d.offsetHeight, ex = (u - 1) / 2;
-  let x = state.tx + (b.x + b.w / 2) * k - dw / 2, y = state.ty + b.y * k - dh * (1 + ex) - 22 * u;
-  if (y < 4 + dh * ex) {
-    const yb = state.ty + (b.y + b.h) * k + dh * ex + 66 * u, zc = $("#zc"), zt = zc.hidden ? h : zc.offsetTop - (u - 1) * zc.offsetHeight;
-    y = yb + dh * (1 + ex) <= Math.min(h, zt) - 4 ? yb : 4 + dh * ex;
-  }
-  d.style.left = Math.max(4 + dw * ex, Math.min(w - dw * (1 + ex) - 4, x)) + "px";
-  d.style.top = Math.max(4 + dh * ex, Math.min(h - dh * (1 + ex) - 4, y)) + "px";
+  $("#hint").classList.add("sel");
 }
 function layoutMode() {
   const w = innerWidth >= 900, sh = innerHeight < 520 && innerWidth >= 600 && innerWidth > innerHeight;
