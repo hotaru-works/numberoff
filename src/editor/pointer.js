@@ -17,6 +17,9 @@ function pt(e) {
 const VW = cv.parentElement;
 VW.onpointerdown = (e) => {
   if (state.cur < 0 || e.target.closest("#zc,#delb,#undo,#redo")) return;
+  // a touch during the zoom animation (right after selecting a plate) ends it at once:
+  // otherwise the finger position is read from a photo that is still moving and the plate jumps
+  if (cv.classList.contains("anim")) cv.classList.remove("anim");
   VW.setPointerCapture(e.pointerId);
   P.set(e.pointerId, [e.clientX, e.clientY]);
   if (P.size > 2) return;
@@ -171,7 +174,9 @@ function start(p, e) {
   if (i >= 0) {
     const ns = i != state.sel;
     state.sel = i;
-    state.drag = { m: "m", i, s: p, o: it.boxes[i].q.map((v) => [...v]), mv: false, ns, sn: snap(it) };
+    // on a touch screen the first touch only selects the plate (a small wobble of the finger used to move it);
+    // it can be moved once it is selected. With a mouse it can be dragged right away as before.
+    state.drag = { m: "m", i, s: p, o: it.boxes[i].q.map((v) => [...v]), mv: false, ns, lock: ns && e && e.pointerType != "mouse", sn: snap(it) };
     ui();
     draw();
     return;
@@ -256,7 +261,7 @@ function movedrag(p) {
   if (d.m == "m") {
     const r = bbq(d.o);
     let dx = p[0] - d.s[0], dy = p[1] - d.s[1];
-    if (Math.hypot(dx, dy) * cv.parentElement.clientWidth / W * state.z >= 6) d.mv = true;
+    if (!d.lock && Math.hypot(dx, dy) * cv.parentElement.clientWidth / W * state.z >= 6) d.mv = true;
     if (!d.mv) {
       it.boxes[d.i].q = d.o.map((v) => [...v]);
       return;
