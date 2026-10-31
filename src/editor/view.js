@@ -284,6 +284,7 @@ $("#bnext").onclick = () => stepBox(1);
 function setFull(on) {
   document.body.classList.toggle("fs", on);
   $("#fs").setAttribute("aria-label", on ? "全画面を閉じる" : "全画面");
+  placeStrip();
   fitView();
   zr();
   draw();
@@ -323,7 +324,21 @@ function layoutMode() {
   const w = innerWidth >= 900, sh = innerHeight < 520 && innerWidth >= 600 && innerWidth > innerHeight;
   document.body.classList.toggle("wide", w || sh);
   document.body.classList.toggle("short", sh);
+  placeStrip();
   placeDock(w || sh);
+}
+// phone: undo / redo, the status (or "‹ 決定 🗑 ›" for the selected plate) and the zoom buttons share one row under the photo
+const strip = document.createElement("div");
+strip.id = "strip";
+$("#vw").append(strip);
+function placeStrip() {
+  const b = document.body, on = !b.classList.contains("wide") && !b.classList.contains("fs"), h = $("#hint");
+  if (on && h.parentElement !== strip) strip.append($("#undo"), $("#redo"), h, $("#zc"));
+  else if (!on && h.parentElement === strip) {
+    $("#vw").append($("#undo"), $("#redo"), $("#zc"));
+    $("#vw").after(h);
+  }
+  b.classList.toggle("strip", on);
 }
 function placeDock(wide) {
   const d = $("#dock"), t = $("#tools"), ps = [$("#pSize"), $("#pBr"), $("#pPl"), $("#pTx")];
@@ -353,7 +368,7 @@ function fitView() {
   // the viewer takes the crop's shape (its height follows its width)
   const setH = () => v.style.height = C ? Math.round(v.clientWidth / asp) + "px" : "";
   if (document.body.classList.contains("work") && !document.body.classList.contains("wide")) {
-    const th = $("#th").getBoundingClientRect().bottom, bh2 = $("#bar").offsetHeight || 150, hh2 = ($("#hint").offsetHeight || 24) + 14, av = Math.max(120, innerHeight - bh2 - th - hh2 - 50 - 12), cw = Math.min(v.parentElement.clientWidth, Math.round(av * asp)), ih = cw / asp;
+    const th = $("#th").getBoundingClientRect().bottom, bh2 = $("#bar").offsetHeight || 150, hh2 = document.body.classList.contains("strip") ? 0 : ($("#hint").offsetHeight || 24) + 14, av = Math.max(120, innerHeight - bh2 - th - hh2 - 50 - 12), cw = Math.min(v.parentElement.clientWidth, Math.round(av * asp)), ih = cw / asp;
     v.style.maxWidth = cw + "px";
     setH();
     v.parentElement.style.paddingTop = av - ih >= 50 ? "50px" : "";
