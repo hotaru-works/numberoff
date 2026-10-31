@@ -110,6 +110,8 @@ function numberoff() {
 }
 
 export default defineConfig({
+  // like Cloudflare Pages with a 404.html: unknown URLs are 404, not the app
+  appType: "mpa",
   build: {
     target: "es2022",
     outDir: "dist",
