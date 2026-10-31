@@ -5,9 +5,10 @@ import { join, resolve } from "node:path";
 
 // ONNX Runtime Web is loaded at runtime from /ort/ (single-threaded build, so no cross-origin isolation is needed).
 const ORT_DIR = resolve("node_modules/onnxruntime-web/dist");
-// ort.min.js plus the plain WebAssembly build (.wasm, and its .mjs loader in newer versions);
-// variants such as *.jsep.* (WebGPU) are not used
-const ortFiles = () => readdirSync(ORT_DIR).filter((f) => f == "ort.min.js" || /^ort-wasm[\w-]*\.(wasm|mjs)$/.test(f));
+// the WebAssembly-only bundle (ort.wasm.min.js) and its runtime (.wasm and the .mjs loader);
+// the WebGPU variants (*.jsep.*) are much larger and not used
+const ORT_JS = "ort.wasm.min.js";
+const ortFiles = () => readdirSync(ORT_DIR).filter((f) => f == ORT_JS || /^ort-wasm[\w-]*\.(wasm|mjs)$/.test(f));
 const MAX_FILE = 25 * 1024 * 1024; // Cloudflare Pages per-file limit
 
 // CSP: only this site may be contacted, so photos physically cannot be sent anywhere.
@@ -70,7 +71,7 @@ function numberoff() {
     },
     closeBundle() {
       // 1. ONNX Runtime Web
-      if (!existsSync(join(ORT_DIR, "ort.min.js"))) throw new Error(`missing ${ORT_DIR}/ort.min.js - run "npm install" first`);
+      if (!existsSync(join(ORT_DIR, ORT_JS))) throw new Error(`missing ${ORT_DIR}/${ORT_JS} - run "npm install" first`);
       mkdirSync(join(outDir, "ort"), { recursive: true });
       const ort = ortFiles();
       for (const f of ort) {

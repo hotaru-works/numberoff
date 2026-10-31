@@ -46,7 +46,7 @@ async function loadOrt() {
   if (window.ort) return;
   await new Promise((ok, ng) => {
     const s = document.createElement("script");
-    s.src = "ort/ort.min.js";
+    s.src = "ort/ort.wasm.min.js";
     s.onload = ok;
     s.onerror = ng;
     document.head.appendChild(s);
