@@ -46,7 +46,9 @@ function paint(it, c, s, soft = -1, cache = true) {
   const qs = it.boxes.map((b) => b.q.map(([x, y]) => [x * s, y * s])), lw = Math.max(1.5, 2 * s);
   if (cache && (!it._pc || it._pc.size > 60)) it._pc = /* @__PURE__ */ new Map();
   qs.forEach((q, i) => {
-    const al = i == soft ? 0.4 : 1, t = it.tx ?? state.dTx, br = it.br ?? state.dBr, cl = it.cl ?? state.dCl, pl = plCol(plEff(it, it.boxes[i]), cl), key = cache && [s, al, t, br, cl, plKey(pl), q.map((p) => p[0].toFixed(1) + "," + p[1].toFixed(1))].join("|");
+    // a selected mask is see-through so it can be lined up with the plate; a fictional plate only while it is being dragged
+    // (otherwise the real plate showing through looks like the text jumped)
+    const t = it.tx ?? state.dTx, br = it.br ?? state.dBr, cl = it.cl ?? state.dCl, pl = plCol(plEff(it, it.boxes[i]), cl), al = i == soft && (!pl || state.drag) ? 0.4 : 1, key = cache && [s, al, t, br, cl, plKey(pl), q.map((p) => p[0].toFixed(1) + "," + p[1].toFixed(1))].join("|");
     let Ly = cache && it._pc.get(key);
     if (!Ly) {
       Ly = layer(B, q, t, br, cl, al, lw, pl);

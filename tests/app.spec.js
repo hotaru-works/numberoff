@@ -162,3 +162,17 @@ test("full screen button shows the photo over the whole screen", async ({ page }
   await page.click("#fs");
   await expect(page.locator("body")).not.toHaveClass(/\bfs\b/);
 });
+
+test("a window height change (phone keyboard) keeps the zoom", async ({ page }) => {
+  await page.click("#obSkip");
+  await page.setInputFiles("#pick", CAR);
+  await expect(page.locator("#busy")).toBeHidden({ timeout: 60_000 });
+  await page.click("#zp");
+  const z0 = await page.locator("#zl").textContent();
+  const vp = page.viewportSize();
+  await page.setViewportSize({ width: vp.width, height: Math.round(vp.height * 0.6) });
+  await page.waitForTimeout(400);
+  await page.setViewportSize(vp);
+  await page.waitForTimeout(400);
+  await expect(page.locator("#zl")).toHaveText(z0);
+});

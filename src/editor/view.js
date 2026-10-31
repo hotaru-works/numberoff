@@ -373,7 +373,15 @@ new ResizeObserver(() => {
   setVH();
   if (!h || h == lastBH) return;
   lastBH = h;
-  if (state.cur < 0 || document.body.classList.contains("wide")) return;
+  if (state.cur < 0 || document.body.classList.contains("wide") || typing()) return;
+  refit();
+  const gap = $("#vw").getBoundingClientRect().bottom + 8 - $("#bar").getBoundingClientRect().top;
+  if (gap > 0) scrollBy({ top: gap, behavior: "smooth" });
+}).observe($("#bar"));
+// the phone keyboard (plate text fields) changes the window height: the layout waits until typing ends,
+// and only a change of width (turning the phone) resets the zoom
+const typing = () => !!document.activeElement && document.activeElement.matches(".panel input");
+function refit() {
   const v = cv.parentElement, w0 = v.clientWidth;
   fitView();
   const k = w0 ? v.clientWidth / w0 : 1;
@@ -381,20 +389,32 @@ new ResizeObserver(() => {
   state.ty *= k;
   apply();
   draw();
-  const gap = $("#vw").getBoundingClientRect().bottom + 8 - $("#bar").getBoundingClientRect().top;
-  if (gap > 0) scrollBy({ top: gap, behavior: "smooth" });
-}).observe($("#bar"));
-let rzT = 0;
+}
+let rzT = 0, lastW = innerWidth;
 addEventListener("resize", () => {
   setVH();
   clearTimeout(rzT);
   rzT = setTimeout(() => {
     layoutMode();
-    if (state.cur < 0) return;
-    fitView();
-    zr();
-    draw();
+    if (state.cur < 0 || typing()) return;
+    if (innerWidth != lastW) {
+      lastW = innerWidth;
+      fitView();
+      zr();
+      draw();
+    } else refit();
   }, 120);
+});
+document.addEventListener("focusout", (e) => {
+  if (!e.target.matches || !e.target.matches(".panel input") || state.cur < 0) return;
+  // after the keyboard has closed
+  setTimeout(() => {
+    if (typing()) return;
+    // iPhone scrolls the page to the field; the editor does not scroll, so put it back
+    if (document.body.classList.contains("work") && !document.body.classList.contains("wide")) scrollTo(0, 0);
+    lastBH = $("#bar").offsetHeight;
+    refit();
+  }, 300);
 });
 function zr() {
   zprev = null;
