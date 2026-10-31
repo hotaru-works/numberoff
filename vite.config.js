@@ -5,7 +5,9 @@ import { join, resolve } from "node:path";
 
 // ONNX Runtime Web is loaded at runtime from /ort/ (single-threaded build, so no cross-origin isolation is needed).
 const ORT_DIR = resolve("node_modules/onnxruntime-web/dist");
-const ORT_FILES = ["ort.min.js", "ort-wasm.wasm", "ort-wasm-simd.wasm"];
+// ort.min.js plus the plain WebAssembly build (.wasm, and its .mjs loader in newer versions);
+// variants such as *.jsep.* (WebGPU) are not used
+const ortFiles = () => readdirSync(ORT_DIR).filter((f) => f == "ort.min.js" || /^ort-wasm[\w-]*\.(wasm|mjs)$/.test(f));
 const MAX_FILE = 25 * 1024 * 1024; // Cloudflare Pages per-file limit
 
 // CSP: only this site may be contacted, so photos physically cannot be sent anywhere.
@@ -61,18 +63,19 @@ function numberoff() {
     configureServer(server) {
       server.middlewares.use("/ort", (req, res, next) => {
         const f = join(ORT_DIR, decodeURIComponent(req.url.split("?")[0]).replace(/^\/+/, ""));
-        if (!ORT_FILES.some((n) => f.endsWith(n)) || !existsSync(f)) return next();
+        if (!ortFiles().some((n) => f.endsWith("/" + n))) return next();
         res.setHeader("Content-Type", f.endsWith(".wasm") ? "application/wasm" : "text/javascript");
         createReadStream(f).pipe(res);
       });
     },
     closeBundle() {
       // 1. ONNX Runtime Web
+      if (!existsSync(join(ORT_DIR, "ort.min.js"))) throw new Error(`missing ${ORT_DIR}/ort.min.js - run "npm install" first`);
       mkdirSync(join(outDir, "ort"), { recursive: true });
-      for (const f of ORT_FILES) {
-        const src = join(ORT_DIR, f);
-        if (!existsSync(src)) throw new Error(`missing ${src} - run "npm install" first`);
-        copyFileSync(src, join(outDir, "ort", f));
+      const ort = ortFiles();
+      for (const f of ort) {
+        copyFileSync(join(ORT_DIR, f), join(outDir, "ort", f));
+        if (statSync(join(outDir, "ort", f)).size > MAX_FILE) throw new Error(`ort/${f} exceeds the 25 MiB Cloudflare Pages limit`);
       }
 
       // 2. detection model
@@ -88,14 +91,17 @@ function numberoff() {
       const hash = createHash("sha256").update(readFileSync(join(outDir, "index.html")));
       for (const a of assets) hash.update(a);
       if (existsSync(model)) hash.update(readFileSync(model));
-      for (const f of ORT_FILES) hash.update(readFileSync(join(outDir, "ort", f)));
+      for (const f of ort) hash.update(readFileSync(join(outDir, "ort", f)));
+      // files the service worker keeps for offline use: the model and the runtime
+      const heavy = [...(existsSync(model) ? ["model.onnx"] : []), ...ort.map((f) => `ort/${f}`)];
       const ver = hash.digest("hex").slice(0, 10);
       const sw = join(outDir, "sw.js");
       writeFileSync(
         sw,
         readFileSync(sw, "utf8")
           .replace("__BUILD_VERSION__", ver)
-          .replace("/* __ASSETS__ */", assets.map((a) => JSON.stringify(a)).join(", ")),
+          .replace("/* __ASSETS__ */", assets.map((a) => JSON.stringify(a)).join(", "))
+          .replace("/* __HEAVY__ */", heavy.map((a) => JSON.stringify(a)).join(", ")),
       );
 
       // 5. sitemap: last modified = build date

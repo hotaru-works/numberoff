@@ -5,6 +5,7 @@ import { $ } from "./dom.js";
 import { draw } from "./editor/view.js";
 import { rq } from "./geometry.js";
 import { tr } from "./i18n.js";
+import { imageSize } from "./image-size.js";
 import { state } from "./state.js";
 import { msg } from "./ui/toast.js";
 import { thumb, ui } from "./ui/ui.js";
@@ -52,8 +53,24 @@ function demoImg(yellow, t) {
   return c;
 }
 async function decode(f) {
-  let b = await createImageBitmap(f, { imageOrientation: "from-image" });
+  let b = null;
+  // a very large photo is decoded already shrunk, so the full-size image never has to fit in memory
+  const sz = await imageSize(f).catch(() => null);
+  if (sz && sz.w * sz.h > MAXPX) {
+    try {
+      b = await createImageBitmap(f, { imageOrientation: "from-image", resizeWidth: Math.max(1, Math.floor(sz.w * Math.sqrt(MAXPX / (sz.w * sz.h)))), resizeQuality: "high" });
+      // a browser that resizes before turning the photo upright gives a much smaller picture: decode normally instead
+      if (b.width * b.height < MAXPX * 0.5) {
+        b.close();
+        b = null;
+      }
+    } catch (_) {
+      b = null;
+    }
+  }
+  if (!b) b = await createImageBitmap(f, { imageOrientation: "from-image" });
   const px = b.width * b.height;
+  // safety net: still too large (browser without resize support, or unknown format)
   if (px > MAXPX) {
     const k = Math.sqrt(MAXPX / px), c = document.createElement("canvas");
     c.width = Math.floor(b.width * k);

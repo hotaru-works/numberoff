@@ -7,7 +7,8 @@ const ASSETS = [/* __ASSETS__ */];
 // index.html is not listed: Cloudflare Pages redirects it to './', and a redirected response cannot answer a page load
 const CORE = ['./', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png', 'icons/favicon-32.png', ...ASSETS];
 // the page registers this worker only after the model has loaded, so these come from the browser cache (no second download)
-const HEAVY = ['model.onnx', 'ort/ort.min.js', 'ort/ort-wasm-simd.wasm'];
+// (filled in by vite.config.js: model.onnx and the ONNX Runtime files)
+const HEAVY = [/* __HEAVY__ */];
 
 self.addEventListener('install', e => {
   e.waitUntil((async () => {

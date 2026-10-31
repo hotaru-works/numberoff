@@ -51,7 +51,8 @@ async function loadOrt() {
     s.onerror = ng;
     document.head.appendChild(s);
   });
-  ort.env.wasm.wasmPaths = "ort/";
+  // absolute URL: newer runtimes import their loader (.mjs) relative to the script, not the page
+  ort.env.wasm.wasmPaths = new URL("ort/", location.href).href;
   ort.env.wasm.numThreads = 1;
   ort.env.wasm.proxy = false;
 }

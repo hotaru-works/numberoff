@@ -73,3 +73,41 @@ test("unknown pages return 404 instead of the app", async ({ page }) => {
   const r = await page.goto("/no-such-page");
   expect(r.status()).toBe(404);
 });
+
+test("a very large photo is shrunk to the size limit without distortion", async ({ page }) => {
+  await page.click("#obSkip");
+  // a 6000x4000 (24 MP) JPEG, above the 16 MP limit
+  const jpg = await page.evaluate(async () => {
+    const c = new OffscreenCanvas(6000, 4000);
+    const g = c.getContext("2d");
+    g.fillStyle = "#3a7";
+    g.fillRect(0, 0, 6000, 4000);
+    const b = await c.convertToBlob({ type: "image/jpeg", quality: 0.8 });
+    return [...new Uint8Array(await b.arrayBuffer())];
+  });
+  await page.setInputFiles("#pick", { name: "big.jpg", mimeType: "image/jpeg", buffer: Buffer.from(jpg) });
+  await expect(page.locator("#th .tb:not(.add)")).toHaveCount(1);
+  await expect(page.locator("#busy")).toBeHidden({ timeout: 60_000 });
+  await page.click("#go");
+  const download = page.waitForEvent("download");
+  await page.click("#sv");
+  const buf = await (await download).createReadStream().then(async (s) => {
+    const parts = [];
+    for await (const p of s) parts.push(p);
+    return Buffer.concat(parts);
+  });
+  // read the saved JPEG's size from its frame header
+  let o = 2, w = 0, h = 0;
+  while (o < buf.length) {
+    const m = buf[o + 1], len = buf.readUInt16BE(o + 2);
+    if (m >= 0xc0 && m <= 0xcf && ![0xc4, 0xc8, 0xcc].includes(m)) {
+      h = buf.readUInt16BE(o + 5);
+      w = buf.readUInt16BE(o + 7);
+      break;
+    }
+    o += 2 + len;
+  }
+  expect(w * h).toBeLessThanOrEqual(16e6);
+  expect(w * h).toBeGreaterThan(15e6);
+  expect(Math.abs(w / h - 1.5)).toBeLessThan(0.01);
+});
