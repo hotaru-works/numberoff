@@ -4,7 +4,7 @@ NumberOFF includes or uses the following third-party components.
 
 ## ONNX Runtime Web
 
-- Version: 1.17.3 (copied into `dist/ort/` from npm by `vite.config.js` at build time)
+- Version: 1.31.1 (copied into `dist/ort/` from npm by `vite.config.js` at build time)
 - Copyright (c) Microsoft Corporation
 - License: MIT
 - https://github.com/microsoft/onnxruntime
