@@ -2,7 +2,7 @@
 import { UZ, cv } from "../dom.js";
 import { pushHist, snap } from "./history.js";
 import { runRegion } from "./masks.js";
-import { animT, apply, draw, gest, rdraw, unzoom, visB, zoomAt, zoomToBox, zr } from "./view.js";
+import { animT, apply, draw, zMin, gest, rdraw, unzoom, visB, zoomAt, zoomToBox, zr } from "./view.js";
 import { bbq, inPoly, knob, mids, rq } from "../geometry.js";
 import { tr } from "../i18n.js";
 import { crop } from "../render/paint.js";
@@ -174,7 +174,7 @@ function start(p) {
   if (lt && now - lt.t < 320 && Math.hypot(lt.p[0] - p[0], lt.p[1] - p[1]) < it.bmp.width * 0.04) {
     start.lt = null;
     const W0 = cv.parentElement.clientWidth, k2 = W0 / it.bmp.width;
-    if (state.z > 1.05) {
+    if (state.z > zMin() * 1.05) {
       zr();
     } else {
       zoomAt(2.5, state.tx + p[0] * k2 * state.z, state.ty + p[1] * k2 * state.z);

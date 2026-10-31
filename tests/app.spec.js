@@ -132,3 +132,20 @@ test.describe("search engine crawler", () => {
     await expect(page.locator("html")).toHaveAttribute("lang", "ja");
   });
 });
+
+test("after choosing a size, editing shows only the cropped area", async ({ page }) => {
+  await page.click("#obSkip");
+  await page.setInputFiles("#pick", CAR);
+  await expect(page.locator("#busy")).toBeHidden({ timeout: 60_000 });
+  await page.click("#tSize");
+  await page.click('#chips [data-r="4:5"]');
+  await page.click("#tSize");
+  const r = await page.locator("#cw").boundingBox();
+  expect(Math.abs(r.width / r.height - 0.8)).toBeLessThan(0.02);
+  // back to the original size: the whole photo again (1200x800)
+  await page.click("#tSize");
+  await page.click('#chips [data-r=""]');
+  await page.click("#tSize");
+  const r2 = await page.locator("#cw").boundingBox();
+  expect(Math.abs(r2.width / r2.height - 1.5)).toBeLessThan(0.02);
+});

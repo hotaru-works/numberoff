@@ -7,7 +7,7 @@ import { PCOL, isRealPlace, plateTexC } from "../render/plate.js";
 import { state } from "../state.js";
 import { msg } from "./toast.js";
 import { ui } from "./ui.js";
-let plG = false;
+let plG = false, plT = null;
 const plShown = () => {
   const it = state.items[state.cur];
   if (!it) return state.dPl;
@@ -23,6 +23,12 @@ const savePl = () => {
 function plEdit(fn) {
   const it = state.items[state.cur];
   if (!it) return;
+  const b0 = state.sel >= 0 && it.boxes[state.sel], tgt = b0 || it;
+  // a different plate (or the whole photo) starts a new undo step
+  if (tgt !== plT) {
+    plT = tgt;
+    plG = false;
+  }
   if (!plG) {
     pushHist(it);
     plG = true;
@@ -77,7 +83,9 @@ function plUI() {
       plEdit((q) => q.col = x.dataset.k);
     });
   }
-  $("#plNote").textContent = p.s == "none" ? "" : tr(b ? "このナンバーだけ" : "この写真のナンバーすべて");
+  // one plate is edited when it is selected; otherwise every plate in the photo that has no setting of its own
+  $("#plNote").textContent = tr(b ? "このナンバーだけ" : it && it.boxes.length > 1 ? "ナンバーをタップすると1枚ずつ変えられます" : "この写真のナンバーすべて");
+  $("#plAll").hidden = !(b && b.pl);
   plPrev();
 }
 document.querySelectorAll("#plseg button").forEach((x) => x.onclick = () => {
@@ -112,6 +120,16 @@ document.querySelectorAll("#plseg button").forEach((x) => x.onclick = () => {
     };
   }
 }
+$("#plAll").onclick = () => {
+  const it = state.items[state.cur], b = it && state.sel >= 0 && it.boxes[state.sel];
+  if (!b || !b.pl) return;
+  pushHist(it);
+  delete b.pl;
+  plG = false;
+  it.ok = false;
+  ui();
+  rdraw();
+};
 $("#betaPl").checked = state.BETA;
 document.body.classList.toggle("beta", state.BETA);
 $("#betaPl").onchange = (e) => {

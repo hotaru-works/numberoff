@@ -5,9 +5,29 @@ import { bbq, knob, mids } from "../geometry.js";
 import { tr } from "../i18n.js";
 import { crop, paint } from "../render/paint.js";
 import { state } from "../state.js";
+// After a size (ratio) is chosen and the size panel is closed, editing shows only the cropped area.
+// The canvas still holds the whole photo; the viewer is cut to the crop's shape and zoom/pan are kept inside it.
+function cropView() {
+  const it = state.items[state.cur];
+  if (!it || !it.bmp || !state.ratio || cropMode()) return null;
+  return crop(it.bmp.width, it.bmp.height, it);
+}
+const zMin = () => {
+  const C = cropView();
+  return C ? state.items[state.cur].bmp.width / C[2] : 1;
+};
+let lastVK = "";
+function syncView() {
+  const C = cropView(), k = state.cur + "|" + (C ? C.map((v) => v.toFixed(1)).join(",") : "full");
+  if (k == lastVK) return;
+  lastVK = k;
+  fitView();
+  zr();
+}
 function draw() {
   const it = state.items[state.cur];
   if (!it || !it.bmp) return;
+  syncView();
   const uz = UZ(), PV = Math.min(4096, Math.max(1800, cv.parentElement.clientWidth * (devicePixelRatio || 1) * (state.z > 1.3 ? 2 : 1))), s = Math.min(1, PV / Math.max(it.bmp.width, it.bmp.height)), bx = paint(it, cv, s, state.sel), g = cv.getContext("2d"), lw = Math.max(2, cv.width / 300);
   const q0 = uz * Math.max(0.8, 1 / Math.sqrt(state.z)) / (cv.getBoundingClientRect().width / cv.width || 1);
   if (state.peek) {
@@ -116,7 +136,7 @@ function draw() {
     g.strokeRect(x, y, w, h);
     g.setLineDash([]);
   }
-  if (state.ratio) {
+  if (state.ratio && !cropView()) {
     const [x, y, w, h] = crop(cv.width, cv.height, it);
     g.fillStyle = "rgba(0,0,0,.55)";
     g.beginPath();
@@ -183,12 +203,18 @@ function rdraw() {
   });
 }
 function apply() {
-  const v = cv.parentElement, w = v.clientWidth, h = cv.offsetHeight;
-  state.z = Math.min(8, Math.max(1, state.z));
-  state.tx = Math.min(0, Math.max(w - w * state.z, state.tx));
-  state.ty = Math.min(0, Math.max(h - h * state.z, state.ty));
+  const v = cv.parentElement, w = v.clientWidth, h = v.clientHeight, it = state.items[state.cur], C = cropView(), zm = zMin();
+  state.z = Math.min(8 * zm, Math.max(zm, state.z));
+  if (C) {
+    const k = w / it.bmp.width * state.z;
+    state.tx = Math.min(-C[0] * k, Math.max(w - (C[0] + C[2]) * k, state.tx));
+    state.ty = Math.min(-C[1] * k, Math.max(h - (C[1] + C[3]) * k, state.ty));
+  } else {
+    state.tx = Math.min(0, Math.max(w - w * state.z, state.tx));
+    state.ty = Math.min(0, Math.max(h - h * state.z, state.ty));
+  }
   cv.style.transform = `translate(${state.tx}px,${state.ty}px) scale(${state.z})`;
-  $("#zl").textContent = Math.round(state.z * 100) + "%";
+  $("#zl").textContent = Math.round(state.z / zm * 100) + "%";
   placeDel();
   if (state.z != lastZ) {
     lastZ = state.z;
@@ -217,9 +243,9 @@ function animT() {
 function zoomToBox(b) {
   const it = state.items[state.cur];
   if (!b || !it) return;
-  const r = bbq(b.q), W0 = cv.parentElement.clientWidth, H0 = cv.offsetHeight, k0 = W0 / it.bmp.width;
-  const room = Math.min(0.3, 64 * UZ() / H0), rb = Math.min(0.25, 52 * UZ() / H0), nz = Math.max(1, Math.min(8, 0.7 * W0 / (r.w * k0), (0.86 - room - rb) * H0 / (r.h * k0)));
-  if (nz <= state.z * 1.05 && state.z > 1) return;
+  const r = bbq(b.q), W0 = cv.parentElement.clientWidth, H0 = cv.parentElement.clientHeight, k0 = W0 / it.bmp.width, zm = zMin();
+  const room = Math.min(0.3, 64 * UZ() / H0), rb = Math.min(0.25, 52 * UZ() / H0), nz = Math.max(zm, Math.min(8 * zm, 0.7 * W0 / (r.w * k0), (0.86 - room - rb) * H0 / (r.h * k0)));
+  if (nz <= state.z * 1.05 && state.z > zm) return;
   if (!zprev) zprev = { z: state.z, tx: state.tx, ty: state.ty };
   state.z = Math.max(state.z, nz);
   state.tx = W0 / 2 - (r.x + r.w / 2) * k0 * state.z;
@@ -275,17 +301,23 @@ function fitView() {
   const v = cv.parentElement, it = state.items[state.cur];
   if (!it || !it.bmp) {
     v.style.maxWidth = "";
+    v.style.height = "";
     return;
   }
+  const C = cropView(), asp = C ? C[2] / C[3] : it.bmp.width / it.bmp.height;
+  // the viewer takes the crop's shape (its height follows its width)
+  const setH = () => v.style.height = C ? Math.round(v.clientWidth / asp) + "px" : "";
   if (document.body.classList.contains("work") && !document.body.classList.contains("wide")) {
-    const th = $("#th").getBoundingClientRect().bottom, bh2 = $("#bar").offsetHeight || 150, hh2 = ($("#hint").offsetHeight || 24) + 14, av = Math.max(120, innerHeight - bh2 - th - hh2 - 50 - 12), cw = Math.min(v.parentElement.clientWidth, Math.round(av * it.bmp.width / it.bmp.height)), ih = cw * it.bmp.height / it.bmp.width;
+    const th = $("#th").getBoundingClientRect().bottom, bh2 = $("#bar").offsetHeight || 150, hh2 = ($("#hint").offsetHeight || 24) + 14, av = Math.max(120, innerHeight - bh2 - th - hh2 - 50 - 12), cw = Math.min(v.parentElement.clientWidth, Math.round(av * asp)), ih = cw / asp;
     v.style.maxWidth = cw + "px";
+    setH();
     v.parentElement.style.paddingTop = av - ih >= 50 ? "50px" : "";
     return;
   }
   v.parentElement.style.paddingTop = "";
   const wide = document.body.classList.contains("wide"), sh = document.body.classList.contains("short"), bh = sh ? $("#bar").offsetHeight || 70 : wide ? 100 * UZ() : ($("#bar").offsetHeight || 150) + 8, hh = wide ? 0 : ($("#hint").offsetHeight || 24) + 8, top = Math.max(sh ? 40 : wide ? 110 : 60, v.getBoundingClientRect().top + scrollY), avail = Math.max(sh ? 150 : wide ? 260 : Math.round(innerHeight * 0.45), innerHeight - top - (wide ? 58 * UZ() : 50) - bh - hh);
-  v.style.maxWidth = Math.round(avail * it.bmp.width / it.bmp.height) + "px";
+  v.style.maxWidth = Math.round(avail * asp) + "px";
+  setH();
 }
 const setVH = () => document.documentElement.style.setProperty("--vh", innerHeight + "px");
 setVH();
@@ -328,7 +360,7 @@ function zr() {
   apply();
 }
 function zoomAt(f, cx, cy) {
-  const nz = Math.min(8, Math.max(1, state.z * f)), k = nz / state.z;
+  const zm = zMin(), nz = Math.min(8 * zm, Math.max(zm, state.z * f)), k = nz / state.z;
   state.tx = cx - (cx - state.tx) * k;
   state.ty = cy - (cy - state.ty) * k;
   state.z = nz;
@@ -365,6 +397,8 @@ cv.parentElement.addEventListener("wheel", (e) => {
 }, { passive: false });
 export {
   animT,
+  cropView,
+  zMin,
   apply,
   draw,
   fitView,
