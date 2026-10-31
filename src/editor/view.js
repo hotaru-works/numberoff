@@ -1,0 +1,380 @@
+// 表示・ズーム
+import { $, UZ, cv } from "../dom.js";
+import { P, cropMode } from "./pointer.js";
+import { bbq, knob, mids } from "../geometry.js";
+import { tr } from "../i18n.js";
+import { crop, paint } from "../render/paint.js";
+import { state } from "../state.js";
+function draw() {
+  const it = state.items[state.cur];
+  if (!it || !it.bmp) return;
+  const uz = UZ(), PV = Math.min(4096, Math.max(1800, cv.parentElement.clientWidth * (devicePixelRatio || 1) * (state.z > 1.3 ? 2 : 1))), s = Math.min(1, PV / Math.max(it.bmp.width, it.bmp.height)), bx = paint(it, cv, s, state.sel), g = cv.getContext("2d"), lw = Math.max(2, cv.width / 300);
+  const q0 = uz * Math.max(0.8, 1 / Math.sqrt(state.z)) / (cv.getBoundingClientRect().width / cv.width || 1);
+  if (state.peek) {
+    paint({ bmp: it.bmp, boxes: [] }, cv, s, -1, false);
+    $("#delb").hidden = true;
+    cursorOv();
+    return;
+  }
+  if (state.sel >= 0 && bx[state.sel]) {
+    const Q = bx[state.sel], q = q0;
+    const path = () => {
+      g.beginPath();
+      Q.forEach(([a, b], k) => k ? g.lineTo(a, b) : g.moveTo(a, b));
+      g.closePath();
+    };
+    g.lineJoin = "round";
+    g.strokeStyle = "#fff";
+    g.lineWidth = 5 * q;
+    path();
+    g.stroke();
+    g.strokeStyle = "#2f6bff";
+    g.lineWidth = 2.5 * q;
+    path();
+    g.stroke();
+    const ae = state.drag && state.drag.m == "e" ? state.drag.e : -1;
+    mids(Q).forEach(([a, b], i) => {
+      const A = Q[i], B = Q[(i + 1) % 4], ang = Math.atan2(B[1] - A[1], B[0] - A[0]);
+      g.save();
+      g.translate(a, b);
+      g.rotate(ang);
+      g.beginPath();
+      g.roundRect(-13 * q, -4.5 * q, 26 * q, 9 * q, 4.5 * q);
+      g.fillStyle = i == ae ? "#2f6bff" : "#fff";
+      g.fill();
+      g.strokeStyle = "#2f6bff";
+      g.lineWidth = 2 * q;
+      g.stroke();
+      g.restore();
+    });
+    {
+      const K = knob(Q, 30 * q, visB(cv.width / (cv.getBoundingClientRect().width || 1))), on = state.drag && state.drag.m == "rot";
+      g.lineCap = "round";
+      g.strokeStyle = "#fff";
+      g.lineWidth = 4 * q;
+      g.beginPath();
+      g.moveTo(...K.M);
+      g.lineTo(...K.H);
+      g.stroke();
+      g.strokeStyle = "#2f6bff";
+      g.lineWidth = 2 * q;
+      g.stroke();
+      g.beginPath();
+      g.arc(K.H[0], K.H[1], 11 * q, 0, 7);
+      g.fillStyle = on ? "#2f6bff" : "#fff";
+      g.fill();
+      g.strokeStyle = "#2f6bff";
+      g.lineWidth = 2.5 * q;
+      g.stroke();
+      g.strokeStyle = on ? "#fff" : "#2f6bff";
+      g.lineWidth = 1.8 * q;
+      g.beginPath();
+      g.arc(K.H[0], K.H[1], 5.5 * q, -2.6, 1.3);
+      g.stroke();
+      const ax = K.H[0] + 5.5 * q * Math.cos(1.3), ay = K.H[1] + 5.5 * q * Math.sin(1.3);
+      g.beginPath();
+      g.moveTo(ax - 3 * q, ay - 0.5 * q);
+      g.lineTo(ax, ay);
+      g.lineTo(ax + 0.8 * q, ay - 3.2 * q);
+      g.stroke();
+    }
+    const act = state.drag && state.drag.m == "r" ? state.drag.c : -1;
+    Q.forEach(([a, b], i) => {
+      g.beginPath();
+      if (i == act) {
+        g.arc(a, b, 12 * q, 0, 7);
+        g.fillStyle = "#fff";
+        g.fill();
+        g.strokeStyle = "#2f6bff";
+        g.lineWidth = 4 * q;
+        g.stroke();
+        g.beginPath();
+        g.arc(a, b, 3.5 * q, 0, 7);
+        g.fillStyle = "#2f6bff";
+        g.fill();
+      } else {
+        g.globalAlpha = act >= 0 ? 0.45 : 1;
+        g.arc(a, b, 10 * q, 0, 7);
+        g.fillStyle = "#2f6bff";
+        g.fill();
+        g.strokeStyle = "#fff";
+        g.lineWidth = 2 * q;
+        g.stroke();
+        g.globalAlpha = 1;
+      }
+    });
+  }
+  if (state.drag && (state.drag.m == "n" || state.drag.m == "d")) {
+    const [a, b] = [state.drag.a, state.drag.b], x = Math.min(a[0], b[0]) * s, y = Math.min(a[1], b[1]) * s, w = Math.abs(a[0] - b[0]) * s, h = Math.abs(a[1] - b[1]) * s;
+    if (state.drag.m == "d") {
+      g.fillStyle = "rgba(47,107,255,.14)";
+      g.fillRect(x, y, w, h);
+    }
+    g.lineWidth = 2.5 * q0;
+    g.strokeStyle = state.drag.m == "d" ? "#2f6bff" : "#fff";
+    g.setLineDash([9 * q0, 6 * q0]);
+    g.strokeRect(x, y, w, h);
+    g.setLineDash([]);
+  }
+  if (state.ratio) {
+    const [x, y, w, h] = crop(cv.width, cv.height, it);
+    g.fillStyle = "rgba(0,0,0,.55)";
+    g.beginPath();
+    g.rect(0, 0, cv.width, cv.height);
+    g.rect(x, y, w, h);
+    g.fill("evenodd");
+    g.strokeStyle = "#fff";
+    g.lineWidth = lw;
+    g.strokeRect(x, y, w, h);
+  }
+  placeDel();
+  cursorOv();
+}
+function cursorOv() {
+  const o = $("#ov"), v = cv.parentElement, W = v.clientWidth, H = v.clientHeight, dpr = devicePixelRatio || 1;
+  if (o.width != Math.round(W * dpr) || o.height != Math.round(H * dpr)) {
+    o.width = Math.round(W * dpr);
+    o.height = Math.round(H * dpr);
+  }
+  const g = o.getContext("2d");
+  g.setTransform(dpr, 0, 0, dpr, 0, 0);
+  g.clearRect(0, 0, W, H);
+  const it = state.items[state.cur];
+  if (!it || !state.drag || !state.drag.f || !(state.drag.m == "r" || state.drag.m == "n")) return;
+  const k = W / it.bmp.width * state.z, sp = ([x, y]) => [state.tx + x * k, state.ty + y * k], t = state.drag.m == "r" ? it.boxes[state.sel].q[state.drag.c] : state.drag.b, F = sp(state.drag.f), T = sp(t);
+  g.lineCap = "round";
+  const dx = T[0] - F[0], dy = T[1] - F[1], dl = Math.hypot(dx, dy);
+  if (dl > 34) {
+    const ux = dx / dl, uy = dy / dl;
+    g.strokeStyle = "rgba(0,0,0,.35)";
+    g.lineWidth = 5;
+    g.beginPath();
+    g.moveTo(F[0] + ux * 22, F[1] + uy * 22);
+    g.lineTo(T[0] - ux * 13, T[1] - uy * 13);
+    g.stroke();
+    g.strokeStyle = "#fff";
+    g.lineWidth = 2.5;
+    g.stroke();
+    g.fillStyle = "rgba(255,255,255,.28)";
+    g.strokeStyle = "#fff";
+    g.lineWidth = 2;
+    g.beginPath();
+    g.arc(F[0], F[1], 22, 0, 7);
+    g.fill();
+    g.stroke();
+  }
+  g.strokeStyle = "#fff";
+  g.lineWidth = 4.5;
+  g.beginPath();
+  g.arc(T[0], T[1], 11, 0, 7);
+  g.stroke();
+  g.strokeStyle = "#2f6bff";
+  g.lineWidth = 2.5;
+  g.stroke();
+}
+let lastZ = 1;
+let rdq = false;
+function rdraw() {
+  if (rdraw.q) return;
+  rdraw.q = 1;
+  requestAnimationFrame(() => {
+    rdraw.q = 0;
+    draw();
+  });
+}
+function apply() {
+  const v = cv.parentElement, w = v.clientWidth, h = cv.offsetHeight;
+  state.z = Math.min(8, Math.max(1, state.z));
+  state.tx = Math.min(0, Math.max(w - w * state.z, state.tx));
+  state.ty = Math.min(0, Math.max(h - h * state.z, state.ty));
+  cv.style.transform = `translate(${state.tx}px,${state.ty}px) scale(${state.z})`;
+  $("#zl").textContent = Math.round(state.z * 100) + "%";
+  placeDel();
+  if (state.z != lastZ) {
+    lastZ = state.z;
+    if (!rdq) {
+      rdq = true;
+      requestAnimationFrame(() => {
+        rdq = false;
+        draw();
+      });
+    }
+  }
+}
+const visB = (sc) => {
+  const r = cv.getBoundingClientRect(), v = cv.parentElement.getBoundingClientRect();
+  return [(v.left - r.left) * sc, (v.top - r.top) * sc, (v.right - r.left) * sc, (v.bottom - r.top) * sc];
+};
+let zprev = null;
+function animT() {
+  cv.classList.add("anim");
+  clearTimeout(animT.t);
+  animT.t = setTimeout(() => {
+    cv.classList.remove("anim");
+    draw();
+  }, 320);
+}
+function zoomToBox(b) {
+  const it = state.items[state.cur];
+  if (!b || !it) return;
+  const r = bbq(b.q), W0 = cv.parentElement.clientWidth, H0 = cv.offsetHeight, k0 = W0 / it.bmp.width;
+  const room = Math.min(0.3, 64 * UZ() / H0), rb = Math.min(0.25, 52 * UZ() / H0), nz = Math.max(1, Math.min(8, 0.7 * W0 / (r.w * k0), (0.86 - room - rb) * H0 / (r.h * k0)));
+  if (nz <= state.z * 1.05 && state.z > 1) return;
+  if (!zprev) zprev = { z: state.z, tx: state.tx, ty: state.ty };
+  state.z = Math.max(state.z, nz);
+  state.tx = W0 / 2 - (r.x + r.w / 2) * k0 * state.z;
+  state.ty = H0 * (0.5 + room / 2 - rb / 2) - (r.y + r.h / 2) * k0 * state.z;
+  animT();
+  apply();
+}
+function unzoom() {
+  if (!zprev) return;
+  state.z = zprev.z;
+  state.tx = zprev.tx;
+  state.ty = zprev.ty;
+  zprev = null;
+  animT();
+  apply();
+}
+function placeDel() {
+  const it = state.items[state.cur], d = $("#delb"), b = it && it.boxes[state.sel] && bbq(it.boxes[state.sel].q);
+  if (!b || state.drag || cropMode()) {
+    d.hidden = true;
+    state.cf = false;
+    return;
+  }
+  $("#delq").hidden = !state.cf;
+  $("#deln").hidden = !state.cf;
+  $("#decb").hidden = state.cf;
+  $("#dely").className = state.cf ? "x" : "";
+  $("#dely").innerHTML = state.cf ? tr("削除") : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4.5h6V7M6.5 7l1 12.5h9l1-12.5"/></svg>';
+  d.hidden = false;
+  const v = cv.parentElement, w = v.clientWidth, h = v.clientHeight, k = w / it.bmp.width * state.z, u = UZ(), dw = d.offsetWidth, dh = d.offsetHeight, ex = (u - 1) / 2;
+  let x = state.tx + (b.x + b.w / 2) * k - dw / 2, y = state.ty + b.y * k - dh * (1 + ex) - 22 * u;
+  if (y < 4 + dh * ex) {
+    const yb = state.ty + (b.y + b.h) * k + dh * ex + 66 * u, zc = $("#zc"), zt = zc.hidden ? h : zc.offsetTop - (u - 1) * zc.offsetHeight;
+    y = yb + dh * (1 + ex) <= Math.min(h, zt) - 4 ? yb : 4 + dh * ex;
+  }
+  d.style.left = Math.max(4 + dw * ex, Math.min(w - dw * (1 + ex) - 4, x)) + "px";
+  d.style.top = Math.max(4 + dh * ex, Math.min(h - dh * (1 + ex) - 4, y)) + "px";
+}
+function layoutMode() {
+  const w = innerWidth >= 900, sh = innerHeight < 520 && innerWidth >= 600 && innerWidth > innerHeight;
+  document.body.classList.toggle("wide", w || sh);
+  document.body.classList.toggle("short", sh);
+  placeDock(w || sh);
+}
+function placeDock(wide) {
+  const d = $("#dock"), t = $("#tools"), ps = [$("#pSize"), $("#pBr"), $("#pPl"), $("#pTx")];
+  if (!wide) {
+    if (t.parentElement !== d) d.append(...ps, t);
+  } else if (t.parentElement === d) $("#hint").after(t, ...ps);
+}
+layoutMode();
+function fitView() {
+  const v = cv.parentElement, it = state.items[state.cur];
+  if (!it || !it.bmp) {
+    v.style.maxWidth = "";
+    return;
+  }
+  if (document.body.classList.contains("work") && !document.body.classList.contains("wide")) {
+    const th = $("#th").getBoundingClientRect().bottom, bh2 = $("#bar").offsetHeight || 150, hh2 = ($("#hint").offsetHeight || 24) + 14, av = Math.max(120, innerHeight - bh2 - th - hh2 - 50 - 12), cw = Math.min(v.parentElement.clientWidth, Math.round(av * it.bmp.width / it.bmp.height)), ih = cw * it.bmp.height / it.bmp.width;
+    v.style.maxWidth = cw + "px";
+    v.parentElement.style.paddingTop = av - ih >= 50 ? "50px" : "";
+    return;
+  }
+  v.parentElement.style.paddingTop = "";
+  const wide = document.body.classList.contains("wide"), sh = document.body.classList.contains("short"), bh = sh ? $("#bar").offsetHeight || 70 : wide ? 100 * UZ() : ($("#bar").offsetHeight || 150) + 8, hh = wide ? 0 : ($("#hint").offsetHeight || 24) + 8, top = Math.max(sh ? 40 : wide ? 110 : 60, v.getBoundingClientRect().top + scrollY), avail = Math.max(sh ? 150 : wide ? 260 : Math.round(innerHeight * 0.45), innerHeight - top - (wide ? 58 * UZ() : 50) - bh - hh);
+  v.style.maxWidth = Math.round(avail * it.bmp.width / it.bmp.height) + "px";
+}
+const setVH = () => document.documentElement.style.setProperty("--vh", innerHeight + "px");
+setVH();
+let lastBH = -1;
+new ResizeObserver(() => {
+  const h = $("#bar").offsetHeight;
+  document.documentElement.style.setProperty("--barh", (h || 110) + "px");
+  setVH();
+  if (!h || h == lastBH) return;
+  lastBH = h;
+  if (state.cur < 0 || document.body.classList.contains("wide")) return;
+  const v = cv.parentElement, w0 = v.clientWidth;
+  fitView();
+  const k = w0 ? v.clientWidth / w0 : 1;
+  state.tx *= k;
+  state.ty *= k;
+  apply();
+  draw();
+  const gap = $("#vw").getBoundingClientRect().bottom + 8 - $("#bar").getBoundingClientRect().top;
+  if (gap > 0) scrollBy({ top: gap, behavior: "smooth" });
+}).observe($("#bar"));
+let rzT = 0;
+addEventListener("resize", () => {
+  setVH();
+  clearTimeout(rzT);
+  rzT = setTimeout(() => {
+    layoutMode();
+    if (state.cur < 0) return;
+    fitView();
+    zr();
+    draw();
+  }, 120);
+});
+function zr() {
+  zprev = null;
+  state.z = 1;
+  state.tx = state.ty = 0;
+  state.pan = false;
+  $("#zh").className = "";
+  apply();
+}
+function zoomAt(f, cx, cy) {
+  const nz = Math.min(8, Math.max(1, state.z * f)), k = nz / state.z;
+  state.tx = cx - (cx - state.tx) * k;
+  state.ty = cy - (cy - state.ty) * k;
+  state.z = nz;
+  apply();
+}
+function gest() {
+  const [a, b] = [...P.values()];
+  return { d: Math.hypot(a[0] - b[0], a[1] - b[1]) || 1, mx: (a[0] + b[0]) / 2, my: (a[1] + b[1]) / 2 };
+}
+function vc() {
+  const r = cv.parentElement.getBoundingClientRect();
+  return [r.width / 2, r.height / 2];
+}
+{
+  const c = $("#cmp"), on = (v) => (e) => {
+    e.preventDefault();
+    state.peek = v;
+    draw();
+  };
+  c.onpointerdown = on(true);
+  c.onpointerup = c.onpointerleave = c.onpointercancel = on(false);
+  c.oncontextmenu = (e) => e.preventDefault();
+}
+$("#zp").onclick = () => zoomAt(1.6, ...vc());
+$("#zm").onclick = () => zoomAt(1 / 1.6, ...vc());
+$("#zh").onclick = () => {
+  state.pan = !state.pan;
+  $("#zh").className = state.pan ? "on" : "";
+};
+cv.parentElement.addEventListener("wheel", (e) => {
+  e.preventDefault();
+  const r = cv.parentElement.getBoundingClientRect();
+  zoomAt(e.deltaY < 0 ? 1.2 : 1 / 1.2, e.clientX - r.left, e.clientY - r.top);
+}, { passive: false });
+export {
+  animT,
+  apply,
+  draw,
+  fitView,
+  gest,
+  placeDel,
+  rdraw,
+  unzoom,
+  vc,
+  visB,
+  zoomAt,
+  zoomToBox,
+  zr
+};

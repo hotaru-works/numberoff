@@ -1,0 +1,15 @@
+# Weekly update pull requests for npm packages and GitHub Actions.
+# Security fixes are proposed as soon as an advisory is published (when Dependabot alerts are on).
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      dev-tools:
+        dependency-type: development
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
