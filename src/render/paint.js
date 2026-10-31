@@ -1,6 +1,6 @@
 // 画像と塗りの描画・切り抜き
 import { bbq, qpath } from "../geometry.js";
-import { plEff, plKey, plateTexC, warpTo } from "./plate.js";
+import { plCol, plEff, plKey, plateTexC, warpTo } from "./plate.js";
 import { state } from "../state.js";
 const hexRGB = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
 function col(g, x, y, w, h, adj, cl = "auto") {
@@ -46,7 +46,7 @@ function paint(it, c, s, soft = -1, cache = true) {
   const qs = it.boxes.map((b) => b.q.map(([x, y]) => [x * s, y * s])), lw = Math.max(1.5, 2 * s);
   if (cache && (!it._pc || it._pc.size > 60)) it._pc = /* @__PURE__ */ new Map();
   qs.forEach((q, i) => {
-    const al = i == soft ? 0.4 : 1, t = it.tx ?? state.dTx, br = it.br ?? state.dBr, cl = it.cl ?? state.dCl, pl = plEff(it, it.boxes[i]), key = cache && [s, al, t, br, cl, plKey(pl), q.map((p) => p[0].toFixed(1) + "," + p[1].toFixed(1))].join("|");
+    const al = i == soft ? 0.4 : 1, t = it.tx ?? state.dTx, br = it.br ?? state.dBr, cl = it.cl ?? state.dCl, pl = plCol(plEff(it, it.boxes[i]), cl), key = cache && [s, al, t, br, cl, plKey(pl), q.map((p) => p[0].toFixed(1) + "," + p[1].toFixed(1))].join("|");
     let Ly = cache && it._pc.get(key);
     if (!Ly) {
       Ly = layer(B, q, t, br, cl, al, lw, pl);

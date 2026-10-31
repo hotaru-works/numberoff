@@ -139,7 +139,8 @@ test("after choosing a size, editing shows only the cropped area", async ({ page
   await expect(page.locator("#busy")).toBeHidden({ timeout: 60_000 });
   await page.click("#tSize");
   await page.click('#chips [data-r="4:5"]');
-  await page.click("#tSize");
+  // OK finishes resizing
+  await page.click("#go");
   const r = await page.locator("#cw").boundingBox();
   expect(Math.abs(r.width / r.height - 0.8)).toBeLessThan(0.02);
   // back to the original size: the whole photo again (1200x800)
