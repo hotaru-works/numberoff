@@ -5,7 +5,19 @@
 <meta name="theme-color" content="#0e0e10" media="(prefers-color-scheme: dark)">
 <meta name="description" content="写真を選ぶだけで、車のナンバープレートを自動で見つけて隠せる無料のWebアプリ。登録・インストール不要。写真はスマホやPCの外に送信されません。イベントやSNS投稿の前に。">
 <link rel="canonical" href="https://numberoff.pages.dev/">
-<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "NumberOFF", "alternateName": "ナンバーオフ", "url": "https://numberoff.pages.dev/", "description": "写真を選ぶだけで、車のナンバープレートを自動で見つけて隠せる無料のWebアプリ。写真は端末の外に送信されません。", "applicationCategory": "PhotographyApplication", "operatingSystem": "iOS, Android, Windows, macOS", "inLanguage": ["ja", "en"], "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "JPY"}}</script>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="NumberOFF">
+<meta property="og:title" content="NumberOFF｜写真のナンバープレートを自動で隠す無料Webアプリ">
+<meta property="og:description" content="写真を選ぶだけで、車のナンバープレートを自動で見つけて隠せる無料のWebアプリ。登録・インストール不要。写真はスマホやPCの外に送信されません。">
+<meta property="og:url" content="https://numberoff.pages.dev/">
+<meta property="og:image" content="https://numberoff.pages.dev/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="NumberOFF：写真のナンバープレートを自動で隠す">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:locale:alternate" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "NumberOFF", "alternateName": "ナンバーオフ", "url": "https://numberoff.pages.dev/", "description": "写真を選ぶだけで、車のナンバープレートを自動で見つけて隠せる無料のWebアプリ。写真は端末の外に送信されません。", "applicationCategory": "PhotographyApplication", "operatingSystem": "iOS, Android, Windows, macOS", "inLanguage": ["ja", "en"], "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "JPY"}, "image": "https://numberoff.pages.dev/og.jpg", "featureList": ["ナンバープレートの自動検出と塗りつぶし", "複数枚のまとめて処理", "範囲で検出・手動で隠す・枠の調整", "塗りの色・明るさ・質感（マット・グロス・ウェット）の調整", "インスタ・ストーリーズ向けの切り抜き", "端末内だけで処理（写真を送信しない）", "オフライン対応"], "browserRequirements": "JavaScript と WebAssembly に対応したブラウザ"}</script>
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icons/favicon-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
@@ -28,6 +40,32 @@
  </label>
  <button class="link" id="demoBtn">サンプルで試す</button>
  <div id="mload"><i></i><span>自動検出を準備中…</span><em><u></u></em></div>
+ <section id="about" aria-labelledby="aboutH">
+  <h2 id="aboutH">写真のナンバープレートを、自動で隠す無料Webアプリ</h2>
+  <p>NumberOFF は、車の写真に写ったナンバープレートをAIで見つけて塗りつぶすWebアプリです。イベントやSNSに写真を投稿する前に、ブラウザだけで使えます。登録やインストールはいりません。</p>
+  <h3>できること</h3>
+  <ul>
+   <li><b>自動で検出</b><span>写真を選ぶだけで、ナンバープレートを見つけて隠します。斜めのプレートにも形を合わせます。</span></li>
+   <li><b>まとめて処理</b><span>何枚でもまとめて選べます。</span></li>
+   <li><b>手直しも簡単</b><span>見落としは「範囲で検出」「手動で隠す」で追加でき、枠は角や辺をドラッグして調整できます。</span></li>
+   <li><b>自然な仕上がり</b><span>塗りの色・明るさ・質感（マット・グロス・ウェット）を写真に合わせられます。</span></li>
+   <li><b>SNS向けに切り抜き</b><span>インスタ（4:5）やストーリーズ（9:16）の比率で、そのまま保存・共有できます。</span></li>
+  </ul>
+  <h3>使い方</h3>
+  <ol>
+   <li>「写真を選ぶ」で写真を選ぶ</li>
+   <li>自動で隠れた場所を確認し、必要なら調整する</li>
+   <li>「OK」を押して、保存または共有する</li>
+  </ol>
+  <h3>写真は外に送られません</h3>
+  <p>写真の処理はすべてお使いのスマホやPCの中で行います。サーバーへの送信や保存はしません。一度開けばオフラインでも使えます。</p>
+  <h3>よくある質問</h3>
+  <dl>
+   <dt>無料ですか？</dt><dd>無料です。登録もいりません。</dd>
+   <dt>どの端末で使えますか？</dt><dd>iPhone・Androidのスマホ、Windows・MacのPCのブラウザで使えます。ホーム画面に追加すると、アプリのように起動できます。</dd>
+   <dt>隠し漏れはありますか？</dt><dd>自動検出のため、見落とすことがあります。公開・共有の前に必ずご自身で確認してください。</dd>
+  </dl>
+ </section>
 </div>
 
 <div id="work" hidden>
