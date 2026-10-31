@@ -28,7 +28,13 @@ function draw() {
   const it = state.items[state.cur];
   if (!it || !it.bmp) return;
   syncView();
-  const uz = UZ(), PV = Math.min(4096, Math.max(1800, cv.parentElement.clientWidth * (devicePixelRatio || 1) * (state.z > 1.3 ? 2 : 1))), s = Math.min(1, PV / Math.max(it.bmp.width, it.bmp.height)), bx = paint(it, cv, s, state.sel), g = cv.getContext("2d"), lw = Math.max(2, cv.width / 300);
+  // the plate was let go while the photo was pushed past its edge: bring the photo back
+  if (apply.sl && !(state.sel >= 0 && it.boxes[state.sel])) {
+    animT();
+    apply();
+  }
+  // resolution of the canvas: more pixels as the zoom grows (in steps, so a pinch does not reallocate it every frame)
+  const uz = UZ(), PV = Math.min(4096, Math.max(1800, cv.parentElement.clientWidth * (devicePixelRatio || 1) * (state.z > 3 ? 4 : state.z > 1.3 ? 2 : 1))), s = Math.min(1, PV / Math.max(it.bmp.width, it.bmp.height)), bx = paint(it, cv, s, state.sel), g = cv.getContext("2d"), lw = Math.max(2, cv.width / 300);
   const q0 = uz * Math.max(0.8, 1 / Math.sqrt(state.z)) / (cv.getBoundingClientRect().width / cv.width || 1);
   if (state.peek) {
     paint({ bmp: it.bmp, boxes: [] }, cv, s, -1, false);
@@ -211,6 +217,7 @@ function apply() {
   const k = w / it.bmp.width * state.z, [X, Y, CW, CH] = C || [0, 0, it.bmp.width, it.bmp.height];
   // while a plate is selected the photo may move a little past its edge, so a plate at the edge can come to the middle (its corners are then easy to reach)
   const sl = state.sel >= 0 && state.z > zm * 1.01 ? 0.35 : 0;
+  apply.sl = sl;
   const fit = (t, view, o, len) => len * k <= view ? (view - len * k) / 2 - o * k : Math.min(-o * k + sl * view, Math.max(view - (o + len) * k - sl * view, t));
   state.tx = fit(state.tx, w, X, CW);
   state.ty = fit(state.ty, h, Y, CH);

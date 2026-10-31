@@ -49,6 +49,14 @@ test("open a photo, mark it OK and save it", async ({ page }) => {
   expect((await download).suggestedFilename()).toMatch(/^NumberOFF_\d{8}_\d{6}\.jpg$/);
 });
 
+test("the runtime's WebAssembly is downloaded once, together with the model", async ({ page }) => {
+  const wasm = [];
+  page.on("response", (r) => /\/ort\/[^/]*\.wasm/.test(r.url()) && wasm.push(r.url().split("/").pop() + " " + r.status()));
+  await page.reload();
+  await expect(page.locator("#mst")).toHaveClass("on", { timeout: 60_000 });
+  expect(wasm).toEqual(["ort-wasm-simd-threaded.wasm 200"]);
+});
+
 test("language can be switched to English", async ({ page }) => {
   await page.click("#obSkip");
   await page.click("#more");
