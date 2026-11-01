@@ -4,6 +4,8 @@ NumberOFF の主な変更点です。書き方は [Keep a Changelog](https://kee
 
 ## [未リリース]
 
+## [1.4.3] - 2026-11-01
+
 ### 追加
 - 前に使ったことがある人には、新しいバージョンで最初に開いたとき1回だけ「アップデートしました」のお知らせを出す（不具合の連絡先として開発者のインスタも案内）
 - 「…」メニューに開発者の Instagram（@kaito_camaro5）へのリンク。検索エンジン向けの構造化データにも作成者として追加
@@ -90,7 +92,8 @@ GitHub での最初の公開版です。
 - 日本語・英語に対応、ホーム画面に追加してオフラインでも使える
 - アプリ内ブラウザで開いたときに、普通のブラウザで開くよう案内
 
-[未リリース]: https://github.com/hotaru-works/numberoff/compare/v1.4.2...HEAD
+[未リリース]: https://github.com/hotaru-works/numberoff/compare/v1.4.3...HEAD
+[1.4.3]: https://github.com/hotaru-works/numberoff/compare/v1.4.2...v1.4.3
 [1.4.2]: https://github.com/hotaru-works/numberoff/compare/v1.4.1...v1.4.2
 [1.4.1]: https://github.com/hotaru-works/numberoff/compare/v1.4.0...v1.4.1
 [1.4.0]: https://github.com/hotaru-works/numberoff/compare/v1.3.1...v1.4.0
