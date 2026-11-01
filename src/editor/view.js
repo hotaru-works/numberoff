@@ -252,7 +252,7 @@ function zoomToBox(b) {
   const it = state.items[state.cur];
   if (!b || !it) return;
   const r = bbq(b.q), W0 = cv.parentElement.clientWidth, H0 = cv.parentElement.clientHeight, k0 = W0 / it.bmp.width, zm = zMin();
-  const room = Math.min(0.3, 12 * UZ() / H0), rb = Math.min(0.25, 52 * UZ() / H0), nz = Math.max(zm, Math.min(8 * zm, 0.7 * W0 / (r.w * k0), (0.86 - room - rb) * H0 / (r.h * k0)));
+  const room = Math.min(0.3, 12 * UZ() / H0), rb = Math.min(0.25, (document.body.classList.contains("wide") || document.body.classList.contains("fs") ? 110 : 52) * UZ() / H0), nz = Math.max(zm, Math.min(8 * zm, 0.7 * W0 / (r.w * k0), (0.86 - room - rb) * H0 / (r.h * k0)));
   if (nz <= state.z * 1.05 && state.z > zm) return;
   if (!zprev) zprev = { z: state.z, tx: state.tx, ty: state.ty };
   state.z = Math.max(state.z, nz);
@@ -346,6 +346,10 @@ function placeStrip() {
     $("#vw").after(h);
   }
   b.classList.toggle("strip", on);
+  // PC: the selected plate's "‹ 決定 🗑 ›" sits at the bottom of the photo, above the zoom buttons (as in full screen)
+  const pc = b.classList.contains("wide") && !b.classList.contains("fs"), d = $("#delb");
+  if (pc && d.parentElement !== $("#vw")) $("#vw").append(d);
+  else if (!pc && d.parentElement === $("#vw")) h.append(d);
 }
 function placeDock(wide) {
   const d = $("#dock"), t = $("#tools"), ps = [$("#pSize"), $("#pBr"), $("#pPl"), $("#pTx")];
