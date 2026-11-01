@@ -5,14 +5,20 @@ import { draw, setFull, stepBox, unzoom, vc, zoomAt } from "./editor/view.js";
 import { tr } from "./i18n.js";
 import { state } from "./state.js";
 import { mClose } from "./ui/menu.js";
+import { newsClose } from "./ui/news.js";
 import { msg } from "./ui/toast.js";
 import { goImg, ui } from "./ui/ui.js";
 document.addEventListener("keydown", (e) => {
+  if (!$("#news").hidden && (e.key == "Escape" || e.key == "Enter")) {
+    e.preventDefault();
+    newsClose();
+    return;
+  }
   if (!$("#menu").hidden && e.key == "Escape") {
     mClose();
     return;
   }
-  if (e.target.closest("input,textarea") || !$("#ob").hidden || !$("#menu").hidden || !$("#iab").hidden || state.cur < 0) return;
+  if (e.target.closest("input,textarea") || !$("#ob").hidden || !$("#menu").hidden || !$("#iab").hidden || !$("#news").hidden || state.cur < 0) return;
   const k = e.key, m = e.ctrlKey || e.metaKey, it = state.items[state.cur];
   if (m && k.toLowerCase() == "z") {
     e.preventDefault();

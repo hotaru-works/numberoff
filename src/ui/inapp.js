@@ -1,5 +1,6 @@
 // アプリ内ブラウザでの案内
 import { $ } from "../dom.js";
+import { newsCheck } from "./news.js";
 import { tr } from "../i18n.js";
 import { OBK, obOpen } from "./onboarding.js";
 import { msg } from "./toast.js";
@@ -26,6 +27,7 @@ function iabHide() {
     } catch (_) {
     }
     if (!seen) obOpen();
+    newsCheck(seen);
   }, 220);
 }
 $("#iabKeep").onclick = iabHide;
@@ -83,4 +85,5 @@ $("#iabOpen").onclick = () => {
   } catch (_) {
   }
   if (!seen) obOpen();
+  newsCheck(seen);
 })();

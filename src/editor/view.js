@@ -28,7 +28,13 @@ function draw() {
   const it = state.items[state.cur];
   if (!it || !it.bmp) return;
   syncView();
-  const uz = UZ(), PV = Math.min(4096, Math.max(1800, cv.parentElement.clientWidth * (devicePixelRatio || 1) * (state.z > 1.3 ? 2 : 1))), s = Math.min(1, PV / Math.max(it.bmp.width, it.bmp.height)), bx = paint(it, cv, s, state.sel), g = cv.getContext("2d"), lw = Math.max(2, cv.width / 300);
+  // the plate was let go while the photo was pushed past its edge: bring the photo back
+  if (apply.sl && !(state.sel >= 0 && it.boxes[state.sel])) {
+    animT();
+    apply();
+  }
+  // resolution of the canvas: more pixels as the zoom grows (in steps, so a pinch does not reallocate it every frame)
+  const uz = UZ(), PV = Math.min(4096, Math.max(1800, cv.parentElement.clientWidth * (devicePixelRatio || 1) * (state.z > 3 ? 4 : state.z > 1.3 ? 2 : 1))), s = Math.min(1, PV / Math.max(it.bmp.width, it.bmp.height)), bx = paint(it, cv, s, state.sel), g = cv.getContext("2d"), lw = Math.max(2, cv.width / 300);
   const q0 = uz * Math.max(0.8, 1 / Math.sqrt(state.z)) / (cv.getBoundingClientRect().width / cv.width || 1);
   if (state.peek) {
     paint({ bmp: it.bmp, boxes: [] }, cv, s, -1, false);
@@ -209,7 +215,10 @@ function apply() {
   // keep the shown area (the crop, or the whole photo) inside the viewer; centre it when it is smaller
   // (it is smaller only in full screen, where the viewer is as tall as the screen)
   const k = w / it.bmp.width * state.z, [X, Y, CW, CH] = C || [0, 0, it.bmp.width, it.bmp.height];
-  const fit = (t, view, o, len) => len * k <= view ? (view - len * k) / 2 - o * k : Math.min(-o * k, Math.max(view - (o + len) * k, t));
+  // while a plate is selected the photo may move a little past its edge, so a plate at the edge can come to the middle (its corners are then easy to reach)
+  const sl = state.sel >= 0 && state.z > zm * 1.01 ? 0.35 : 0;
+  apply.sl = sl;
+  const fit = (t, view, o, len) => len * k <= view ? (view - len * k) / 2 - o * k : Math.min(-o * k + sl * view, Math.max(view - (o + len) * k - sl * view, t));
   state.tx = fit(state.tx, w, X, CW);
   state.ty = fit(state.ty, h, Y, CH);
   cv.style.transform = `translate(${state.tx}px,${state.ty}px) scale(${state.z})`;
@@ -243,7 +252,7 @@ function zoomToBox(b) {
   const it = state.items[state.cur];
   if (!b || !it) return;
   const r = bbq(b.q), W0 = cv.parentElement.clientWidth, H0 = cv.parentElement.clientHeight, k0 = W0 / it.bmp.width, zm = zMin();
-  const room = Math.min(0.3, 12 * UZ() / H0), rb = Math.min(0.25, 52 * UZ() / H0), nz = Math.max(zm, Math.min(8 * zm, 0.7 * W0 / (r.w * k0), (0.86 - room - rb) * H0 / (r.h * k0)));
+  const room = Math.min(0.3, 12 * UZ() / H0), rb = Math.min(0.25, (document.body.classList.contains("wide") || document.body.classList.contains("fs") ? 110 : 52) * UZ() / H0), nz = Math.max(zm, Math.min(8 * zm, 0.7 * W0 / (r.w * k0), (0.86 - room - rb) * H0 / (r.h * k0)));
   if (nz <= state.z * 1.05 && state.z > zm) return;
   if (!zprev) zprev = { z: state.z, tx: state.tx, ty: state.ty };
   state.z = Math.max(state.z, nz);
@@ -282,6 +291,7 @@ $("#bnext").onclick = () => stepBox(1);
 function setFull(on) {
   document.body.classList.toggle("fs", on);
   $("#fs").setAttribute("aria-label", on ? "全画面を閉じる" : "全画面");
+  placeStrip();
   fitView();
   zr();
   draw();
@@ -321,7 +331,25 @@ function layoutMode() {
   const w = innerWidth >= 900, sh = innerHeight < 520 && innerWidth >= 600 && innerWidth > innerHeight;
   document.body.classList.toggle("wide", w || sh);
   document.body.classList.toggle("short", sh);
+  placeStrip();
   placeDock(w || sh);
+}
+// phone: undo / redo, the status (or "‹ 決定 🗑 ›" for the selected plate) and the zoom buttons share one row under the photo
+const strip = document.createElement("div");
+strip.id = "strip";
+$("#vw").append(strip);
+function placeStrip() {
+  const b = document.body, on = !b.classList.contains("wide") && !b.classList.contains("fs"), h = $("#hint");
+  if (on && h.parentElement !== strip) strip.append($("#undo"), $("#redo"), h, $("#zc"));
+  else if (!on && h.parentElement === strip) {
+    $("#vw").append($("#undo"), $("#redo"), $("#zc"));
+    $("#vw").after(h);
+  }
+  b.classList.toggle("strip", on);
+  // PC: the selected plate's "‹ 決定 🗑 ›" sits at the bottom of the photo, above the zoom buttons (as in full screen)
+  const pc = b.classList.contains("wide") && !b.classList.contains("fs"), d = $("#delb");
+  if (pc && d.parentElement !== $("#vw")) $("#vw").append(d);
+  else if (!pc && d.parentElement === $("#vw")) h.append(d);
 }
 function placeDock(wide) {
   const d = $("#dock"), t = $("#tools"), ps = [$("#pSize"), $("#pBr"), $("#pPl"), $("#pTx")];
@@ -351,7 +379,7 @@ function fitView() {
   // the viewer takes the crop's shape (its height follows its width)
   const setH = () => v.style.height = C ? Math.round(v.clientWidth / asp) + "px" : "";
   if (document.body.classList.contains("work") && !document.body.classList.contains("wide")) {
-    const th = $("#th").getBoundingClientRect().bottom, bh2 = $("#bar").offsetHeight || 150, hh2 = ($("#hint").offsetHeight || 24) + 14, av = Math.max(120, innerHeight - bh2 - th - hh2 - 50 - 12), cw = Math.min(v.parentElement.clientWidth, Math.round(av * asp)), ih = cw / asp;
+    const th = $("#th").getBoundingClientRect().bottom, bh2 = $("#bar").offsetHeight || 150, hh2 = document.body.classList.contains("strip") ? 0 : ($("#hint").offsetHeight || 24) + 14, av = Math.max(120, innerHeight - bh2 - th - hh2 - 50 - 12), cw = Math.min(v.parentElement.clientWidth, Math.round(av * asp)), ih = cw / asp;
     v.style.maxWidth = cw + "px";
     setH();
     v.parentElement.style.paddingTop = av - ih >= 50 ? "50px" : "";

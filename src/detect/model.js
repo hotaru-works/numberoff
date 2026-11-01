@@ -62,35 +62,52 @@ const mst = (c, t) => {
   e.title = t || "";
   e.lastChild.textContent = tr("自動検出：") + tr(c == "on" ? "使用できます" : c == "ld" ? "準備中" : "使えません");
 };
+// downloads a file and reports how many bytes have arrived (for the progress bar)
+async function bytes(url, opt, onp) {
+  const r = await fetch(url, opt);
+  if (!r.ok) return null;
+  if (!(r.body && r.body.getReader)) return new Uint8Array(await r.arrayBuffer());
+  const rd = r.body.getReader(), ch = [];
+  let n = 0;
+  for (; ; ) {
+    const { done, value } = await rd.read();
+    if (done) break;
+    ch.push(value);
+    n += value.length;
+    onp(n, +r.headers.get("content-length") || 0);
+  }
+  const b = new Uint8Array(n);
+  let o = 0;
+  for (const c of ch) {
+    b.set(c, o);
+    o += c.length;
+  }
+  return b;
+}
+// the runtime's WebAssembly file; it is fetched here at the same time as the model instead of after it
+// (if the name does not match the installed runtime, the runtime simply fetches its own file as before)
+const WASM = "ort/ort-wasm-simd-threaded.wasm";
 (async () => {
   try {
     state.mprog = 0.02;
     loadUI();
-    const r = await fetch("model.onnx", { cache: "no-cache" });
-    if (!r.ok) {
+    mst("ld", "読み込み中");
+    // the model, the runtime script and its WebAssembly all download in parallel
+    const ortP = loadOrt();
+    ortP.catch(() => {
+    });
+    const pr = { m: [0, 105e5], w: [0, 12e6] }, prog = (k) => (n, tot) => {
+      pr[k] = [n, Math.max(n, tot || pr[k][1])];
+      state.mprog = Math.min(0.85, 0.02 + 0.83 * (pr.m[0] + pr.w[0]) / (pr.m[1] + pr.w[1]));
+      loadUI();
+    };
+    const wasmP = bytes(WASM, { cache: "no-cache" }, prog("w")).catch(() => null);
+    const b = await bytes("model.onnx", { cache: "no-cache" }, prog("m"));
+    if (!b) {
       modelOff("model.onnx がありません");
       return;
     }
-    mst("ld", "読み込み中");
-    let b;
-    if (r.body && r.body.getReader) {
-      const tot = +r.headers.get("content-length") || 105e5, rd = r.body.getReader(), ch = [];
-      let n = 0;
-      for (; ; ) {
-        const { done, value } = await rd.read();
-        if (done) break;
-        ch.push(value);
-        n += value.length;
-        state.mprog = Math.min(0.85, 0.02 + 0.83 * n / tot);
-        loadUI();
-      }
-      b = new Uint8Array(n);
-      let o = 0;
-      for (const c of ch) {
-        b.set(c, o);
-        o += c.length;
-      }
-    } else b = new Uint8Array(await r.arrayBuffer());
+    const wb = await wasmP;
     state.mprog = 0.9;
     loadUI();
     await new Promise((r2) => setTimeout(r2, 30));
@@ -98,7 +115,8 @@ const mst = (c, t) => {
       modelOff("model.onnx がありません");
       return;
     }
-    await loadOrt();
+    await ortP;
+    if (wb && wb.length > 1e5 && wb[0] == 0 && wb[1] == 0x61) ort.env.wasm.wasmBinary = wb;
     state.sess = await ort.InferenceSession.create(b, { executionProviders: ["wasm"] });
     state.mstate = "on";
     state.mprog = 1;
