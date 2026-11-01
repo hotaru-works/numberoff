@@ -57,6 +57,26 @@ test("the runtime's WebAssembly is downloaded once, together with the model", as
   expect(wasm).toEqual(["ort-wasm-simd-threaded.wasm 200"]);
 });
 
+test("people who used the app before see what's new once per version", async ({ page }) => {
+  // first visit: the guide, not the news
+  await expect(page.locator("#ob")).toBeVisible();
+  await expect(page.locator("#news")).toBeHidden();
+  // someone who used an older version
+  await page.evaluate(() => {
+    localStorage.setItem("nk_howto_v1", "1");
+    localStorage.setItem("nk_seen_ver", "1.0.0");
+  });
+  await page.reload();
+  await expect(page.locator("#news")).toBeVisible();
+  await expect(page.locator("#news .dev")).toHaveAttribute("href", "https://www.instagram.com/kaito_camaro5/");
+  await page.click("#nwOk");
+  await expect(page.locator("#news")).toBeHidden();
+  // only once
+  await page.reload();
+  await page.waitForTimeout(500);
+  await expect(page.locator("#news")).toBeHidden();
+});
+
 test("language can be switched to English", async ({ page }) => {
   await page.click("#obSkip");
   await page.click("#more");

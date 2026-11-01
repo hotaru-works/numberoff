@@ -4,6 +4,14 @@ const EN = { "ここに写真をドロップ": "Drop photos here", "ご利用に
 // スタート画面の下の紹介文
 Object.assign(EN, {
   "開発者": "Developer",
+  "アップデートしました": "What's new",
+  "スマホで縦長の写真を大きく表示": "Portrait photos are shown larger on phones",
+  "小さいナンバーも選びやすく、枠もずれない": "Small plates are easier to select, and the box no longer jumps when you select it",
+  "拡大中は指1本で写真を動かせる": "When zoomed in, drag with one finger to move the photo",
+  "拡大した写真がくっきり": "Zoomed-in photos are sharper",
+  "PC と全画面では「決定」を写真の下に表示": "On computers and in full screen, \"Done\" is shown below the photo",
+  "自動検出の準備が早くなった": "Auto detection gets ready faster",
+  "不具合や気づいたことは、開発者のインスタに DM で教えてください": "Found a bug or have feedback? Send the developer a DM on Instagram",
   "全画面": "Full screen",
   "全画面を閉じる": "Exit full screen",
   "前のナンバー": "Previous plate",
