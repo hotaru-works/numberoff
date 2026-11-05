@@ -234,3 +234,4 @@ body.wide:not(.fs) #hint.sel{justify-content:flex-start}body.wide:not(.fs) #hint
 .nwl{margin:0 0 12px;padding-left:1.2em;font-size:13px;line-height:1.55;font-weight:600}
 .nwq{margin:0 0 8px;font-size:12px;color:var(--mut);font-weight:600}
 #nwOk{width:100%;min-height:48px;margin-top:14px;border:0;border-radius:15px;font-size:15px;font-weight:800;background:var(--pri);color:var(--pri-fg)}
+button.dev{width:100%;border:0;font:inherit;text-align:left;cursor:pointer}

@@ -2,9 +2,10 @@
 import { QL } from "../config.js";
 import { mst } from "../detect/model.js";
 import { $ } from "../dom.js";
-import { i18n } from "../i18n.js";
+import { i18n, tr } from "../i18n.js";
 import { state } from "../state.js";
 import { obGo, obI } from "./onboarding.js";
+import { msg } from "./toast.js";
 import { loadUI, ui } from "./ui.js";
 function mOpen() {
   const o = $("#menu");
@@ -17,6 +18,24 @@ function mClose() {
   setTimeout(() => o.hidden = true, 220);
 }
 $("#more").onclick = mOpen;
+// "このアプリを教える": the share sheet where there is one, otherwise copy the link
+$("#shareApp").onclick = async () => {
+  const url = location.origin + (state.LANG == "en" ? "/en/" : "/");
+  const text = tr("NumberOFF – 写真のナンバープレートを自動で隠す無料Webアプリ");
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: "NumberOFF", text, url });
+    } catch (_) {
+    }
+    return;
+  }
+  try {
+    await navigator.clipboard.writeText(url);
+    msg(tr("リンクをコピーしました"));
+  } catch (_) {
+    msg(url);
+  }
+};
 $("#mclose").onclick = mClose;
 $("#menu").onclick = (e) => {
   if (e.target.id == "menu") mClose();
