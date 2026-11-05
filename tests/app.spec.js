@@ -98,7 +98,7 @@ test("the Japanese page has the katakana name and points to the English one", as
   await expect(page.locator('link[hreflang="en"]')).toHaveAttribute("href", "https://numberoff.pages.dev/en/");
 });
 
-test("the menu can share the app link", async ({ page, context }) => {
+test("the menu can share the app link", async ({ page }) => {
   await page.click("#obSkip");
   await page.evaluate(() => {
     delete Navigator.prototype.share;
