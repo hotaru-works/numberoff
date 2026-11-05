@@ -33,13 +33,15 @@ self.addEventListener('fetch', e => {
   // Pages: network first so updates show up, cache when offline.
   if (req.mode === 'navigate') {
     // only a good, non-redirected copy of the top page may replace the offline copy (never a 404 page)
+    // the top page and the English page (/en/) are kept for offline use
+    const top = new URL('./', location).pathname, path = new URL(req.url).pathname, keep = path === top ? './' : path === top + 'en/' ? './en/' : null;
     e.respondWith(fetch(req).then(r => {
-      if (r.ok && !r.redirected && new URL(req.url).pathname === new URL('./', location).pathname) {
+      if (r.ok && !r.redirected && keep) {
         const cp = r.clone();
-        caches.open(CACHE).then(c => c.put('./', cp));
+        caches.open(CACHE).then(c => c.put(keep, cp));
       }
       return r;
-    }).catch(() => caches.match('./')));
+    }).catch(async () => (keep && await caches.match(keep)) || caches.match('./')));
     return;
   }
   // Everything else: cache first (model and engine are large).
