@@ -77,6 +77,27 @@ test("people who used the app before see what's new once per version", async ({ 
   await expect(page.locator("#news")).toBeHidden();
 });
 
+test("the English page is English for people and search engines", async ({ page }) => {
+  await page.goto("/en/");
+  await expect(page).toHaveTitle(/hide or blur license plates/i);
+  await expect(page.locator("html")).toHaveAttribute("lang", "en");
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", "https://numberoff.pages.dev/en/");
+  // the static HTML (what a crawler reads first) is already in English
+  const raw = await (await page.request.get("/en/")).text();
+  expect(raw).toContain("Choose photos");
+  expect(raw).toContain('hreflang="ja"');
+  expect(raw).not.toContain("写真を選ぶ<");
+  // and the app works there
+  await page.click("#obSkip");
+  await expect(page.locator(".cta")).toContainText("Choose photos");
+  await expect(page.locator("#mst")).toHaveClass("on", { timeout: 60_000 });
+});
+
+test("the Japanese page has the katakana name and points to the English one", async ({ page }) => {
+  await expect(page).toHaveTitle(/ナンバーオフ/);
+  await expect(page.locator('link[hreflang="en"]')).toHaveAttribute("href", "https://numberoff.pages.dev/en/");
+});
+
 test("language can be switched to English", async ({ page }) => {
   await page.click("#obSkip");
   await page.click("#more");
@@ -156,7 +177,7 @@ test("search and share information is in the page", async ({ page, request }) =>
 test.describe("search engine crawler", () => {
   test.use({ locale: "en-US", userAgent: "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)" });
   test("sees the Japanese page", async ({ page }) => {
-    await expect(page).toHaveTitle("NumberOFF｜写真のナンバープレートを自動で隠す無料Webアプリ");
+    await expect(page).toHaveTitle("NumberOFF（ナンバーオフ）｜写真のナンバープレートを自動で隠す無料Webアプリ");
     await expect(page.locator("html")).toHaveAttribute("lang", "ja");
   });
 });

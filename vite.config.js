@@ -53,6 +53,70 @@ ${Object.entries(SECURITY)
   Cache-Control: no-cache
 `;
 
+// English page (/en/): the same app with the static text, title and search metadata in English,
+// so search engines can show it for English searches. The UI dictionary is taken from src/i18n.js.
+const SITE = "https://numberoff.pages.dev/";
+const EN_TITLE = "NumberOFF – Hide or blur license plates in photos automatically (free web app)";
+const EN_DESC =
+  "NumberOFF finds the license plates in your car photos and covers them automatically – a free web app and a natural-looking alternative to blurring or pixelating plates. No sign-up or install, and your photos never leave your phone or computer.";
+function enDict() {
+  const src = readFileSync(resolve("src/i18n.js"), "utf8");
+  const a = src.indexOf("const EN = "), b = src.indexOf("\n});", a) + 4;
+  return new Function(src.slice(a, b) + "\nreturn EN;")();
+}
+const esc = (s) => s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+function englishPage(html) {
+  const EN = enDict();
+  const tr = (s) => {
+    const k = s.trim();
+    return EN[k] != null ? s.replace(k, EN[k]) : s;
+  };
+  // translate text between tags and accessible names, but never inside <script>
+  const parts = html.split(/(<script[\s\S]*?<\/script>)/);
+  for (let i = 0; i < parts.length; i += 2) {
+    parts[i] = parts[i]
+      .replace(/>([^<>]+)</g, (m, s) => ">" + tr(s) + "<")
+      .replace(/ (aria-label|title|placeholder)="([^"]*)"/g, (m, a, s) => ` ${a}="${esc(tr(s))}"`);
+  }
+  html = parts.join("");
+  const ld = {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    name: "NumberOFF",
+    alternateName: ["Number OFF", "NumberOff", "ナンバーオフ"],
+    url: SITE + "en/",
+    description: EN_DESC,
+    applicationCategory: "PhotographyApplication",
+    operatingSystem: "iOS, Android, Windows, macOS",
+    inLanguage: "en",
+    isAccessibleForFree: true,
+    offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+    image: SITE + "og.jpg",
+    featureList: [
+      "Automatic license plate detection and cover-up",
+      "Many photos at once",
+      "Find in area, hide by hand, adjust the box",
+      "Color, brightness and finish (matte, gloss, wet) of the cover",
+      "Crop for Instagram posts and Stories",
+      "Runs on your device only (photos are never uploaded)",
+      "Works offline",
+    ],
+    author: { "@type": "Person", name: "kaito_camaro5", url: "https://www.instagram.com/kaito_camaro5/" },
+  };
+  return html
+    .replace('<html lang="ja">', '<html lang="en">')
+    .replace(/<title>[^<]*<\/title>/, `<title>${esc(EN_TITLE)}</title>`)
+    .replace(/<meta name="description" content="[^"]*">/, `<meta name="description" content="${esc(EN_DESC)}">`)
+    .replace(/<link rel="canonical" href="[^"]*">/, `<link rel="canonical" href="${SITE}en/">`)
+    .replace(/<meta property="og:title" content="[^"]*">/, `<meta property="og:title" content="${esc(EN_TITLE)}">`)
+    .replace(/<meta property="og:description" content="[^"]*">/, `<meta property="og:description" content="${esc(EN_DESC)}">`)
+    .replace(/<meta property="og:url" content="[^"]*">/, `<meta property="og:url" content="${SITE}en/">`)
+    .replace(/<meta property="og:image:alt" content="[^"]*">/, '<meta property="og:image:alt" content="NumberOFF: hide license plates in photos automatically">')
+    .replace('<meta property="og:locale" content="ja_JP">', '<meta property="og:locale" content="en_US">')
+    .replace('<meta property="og:locale:alternate" content="en_US">', '<meta property="og:locale:alternate" content="ja_JP">')
+    .replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>/, `<script type="application/ld+json">${JSON.stringify(ld)}</script>`);
+}
+
 function numberoff() {
   let outDir = "dist";
   return {
@@ -105,11 +169,15 @@ function numberoff() {
           .replace("/* __HEAVY__ */", heavy.map((a) => JSON.stringify(a)).join(", ")),
       );
 
-      // 5. sitemap: last modified = build date
+      // 5. English page
+      mkdirSync(join(outDir, "en"), { recursive: true });
+      writeFileSync(join(outDir, "en", "index.html"), englishPage(readFileSync(join(outDir, "index.html"), "utf8")));
+
+      // 6. sitemap: last modified = build date
       const sitemap = join(outDir, "sitemap.xml");
       if (existsSync(sitemap)) {
         const today = new Date().toISOString().slice(0, 10);
-        writeFileSync(sitemap, readFileSync(sitemap, "utf8").replace(/<lastmod>[^<]*<\/lastmod>/, `<lastmod>${today}</lastmod>`));
+        writeFileSync(sitemap, readFileSync(sitemap, "utf8").replace(/<lastmod>[^<]*<\/lastmod>/g, `<lastmod>${today}</lastmod>`));
       }
       console.log(`numberoff: dist ready (sw version ${ver})`);
     },

@@ -2,6 +2,8 @@
 import { PL0 } from "./config.js";
 const state = {
   LANG: (() => {
+    // the English page (/en/) always opens in English
+    if (/^\/en(\/|$)/.test(location.pathname)) return "en";
     try {
       const v = localStorage.getItem("nk_lang");
       if (v) return v;

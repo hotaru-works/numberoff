@@ -46,13 +46,13 @@ async function loadOrt() {
   if (window.ort) return;
   await new Promise((ok, ng) => {
     const s = document.createElement("script");
-    s.src = "ort/ort.wasm.min.js";
+    s.src = "/ort/ort.wasm.min.js";
     s.onload = ok;
     s.onerror = ng;
     document.head.appendChild(s);
   });
   // absolute URL: newer runtimes import their loader (.mjs) relative to the script, not the page
-  ort.env.wasm.wasmPaths = new URL("ort/", location.href).href;
+  ort.env.wasm.wasmPaths = new URL("/ort/", location.href).href;
   ort.env.wasm.numThreads = 1;
   ort.env.wasm.proxy = false;
 }
@@ -86,7 +86,7 @@ async function bytes(url, opt, onp) {
 }
 // the runtime's WebAssembly file; it is fetched here at the same time as the model instead of after it
 // (if the name does not match the installed runtime, the runtime simply fetches its own file as before)
-const WASM = "ort/ort-wasm-simd-threaded.wasm";
+const WASM = "/ort/ort-wasm-simd-threaded.wasm";
 (async () => {
   try {
     state.mprog = 0.02;
@@ -102,7 +102,7 @@ const WASM = "ort/ort-wasm-simd-threaded.wasm";
       loadUI();
     };
     const wasmP = bytes(WASM, { cache: "no-cache" }, prog("w")).catch(() => null);
-    const b = await bytes("model.onnx", { cache: "no-cache" }, prog("m"));
+    const b = await bytes("/model.onnx", { cache: "no-cache" }, prog("m"));
     if (!b) {
       modelOff("model.onnx がありません");
       return;

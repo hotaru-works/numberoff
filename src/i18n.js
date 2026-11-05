@@ -19,8 +19,8 @@ Object.assign(EN, {
   "ほかと同じにする": "Same as the others",
   "NumberOFFについて": "About NumberOFF",
   "写真のナンバープレートを、自動で隠す無料Webアプリ": "A free web app that hides license plates in your photos",
-  "NumberOFF は、車の写真に写ったナンバープレートをAIで見つけて塗りつぶすWebアプリです。イベントやSNSに写真を投稿する前に、ブラウザだけで使えます。登録やインストールはいりません。":
-    "NumberOFF finds the license plates in your car photos with AI and covers them up. Use it in your browser before posting photos from events or to social media. No sign-up or installation needed.",
+  "NumberOFF（ナンバーオフ）は、車の写真に写ったナンバープレートをAIで見つけて塗りつぶすWebアプリです。ぼかしやモザイクの代わりに、写真になじむ塗りでナンバーを消せます。イベントやSNSに写真を投稿する前に、ブラウザだけで使えます。登録やインストールはいりません。":
+    "NumberOFF finds the license plates in your car photos with AI and covers them up – a natural-looking alternative to blurring or pixelating plates. Use it in your browser before posting photos from events or to social media. No sign-up or installation needed.",
   "できること": "What it does",
   "自動で検出": "Automatic detection",
   "写真を選ぶだけで、ナンバープレートを見つけて隠します。斜めのプレートにも形を合わせます。": "Just choose a photo and the plates are found and covered, even when they are at an angle.",
@@ -55,10 +55,12 @@ const tr = (k, p) => {
 };
 const T0 = /* @__PURE__ */ new WeakMap();
 const A0 = /* @__PURE__ */ new WeakMap();
-const TITLE0 = document.title;
+// (on the English page /en/ the HTML title is English, so the Japanese one is written out here)
+const TITLE0 = "NumberOFF（ナンバーオフ）｜写真のナンバープレートを自動で隠す無料Webアプリ";
+const EN_TITLE = "NumberOFF – Hide or blur license plates in photos automatically (free web app)";
 function i18n() {
   document.documentElement.lang = state.LANG;
-  document.title = state.LANG == "en" ? "NumberOFF – Free web app that hides license plates in photos" : TITLE0;
+  document.title = state.LANG == "en" ? EN_TITLE : TITLE0;
   const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
   let n;
   while ((n = w.nextNode())) {
