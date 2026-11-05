@@ -4,6 +4,7 @@ const EN = { "ここに写真をドロップ": "Drop photos here", "ご利用に
 // スタート画面の下の紹介文
 Object.assign(EN, {
   "開発者": "Developer",
+  "プライバシーポリシー": "Privacy policy",
   "このアプリを教える": "Share this app",
   "ぼかしやモザイクとの違いは？": "How is this different from blurring or pixelating?",
   "弱いぼかしやモザイクは、文字が読み取れてしまうことがあります。NumberOFF は塗りで隠すので、元の文字は残りません。": "A light blur or pixelation can sometimes still be read. NumberOFF paints over the plate, so the original characters are gone.",

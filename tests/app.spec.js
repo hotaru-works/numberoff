@@ -112,6 +112,12 @@ test("the menu can share the app link", async ({ page }) => {
   await expect.poll(() => page.evaluate(() => window.__copied)).toMatch(/\/$/);
 });
 
+test("the privacy policy page is served", async ({ page }) => {
+  const r = await page.request.get("/privacy.html");
+  expect(r.ok()).toBeTruthy();
+  expect(await r.text()).toContain("Privacy Policy");
+});
+
 test("language can be switched to English", async ({ page }) => {
   await page.click("#obSkip");
   await page.click("#more");
