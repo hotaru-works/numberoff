@@ -98,6 +98,20 @@ test("the Japanese page has the katakana name and points to the English one", as
   await expect(page.locator('link[hreflang="en"]')).toHaveAttribute("href", "https://numberoff.pages.dev/en/");
 });
 
+test("the menu can share the app link", async ({ page }) => {
+  await page.click("#obSkip");
+  await page.evaluate(() => {
+    delete Navigator.prototype.share;
+    window.__copied = null;
+    navigator.clipboard.writeText = async (s) => {
+      window.__copied = s;
+    };
+  });
+  await page.click("#more");
+  await page.click("#shareApp");
+  await expect.poll(() => page.evaluate(() => window.__copied)).toMatch(/\/$/);
+});
+
 test("language can be switched to English", async ({ page }) => {
   await page.click("#obSkip");
   await page.click("#more");

@@ -4,6 +4,14 @@ const EN = { "ここに写真をドロップ": "Drop photos here", "ご利用に
 // スタート画面の下の紹介文
 Object.assign(EN, {
   "開発者": "Developer",
+  "このアプリを教える": "Share this app",
+  "ぼかしやモザイクとの違いは？": "How is this different from blurring or pixelating?",
+  "弱いぼかしやモザイクは、文字が読み取れてしまうことがあります。NumberOFF は塗りで隠すので、元の文字は残りません。": "A light blur or pixelation can sometimes still be read. NumberOFF paints over the plate, so the original characters are gone.",
+  "人の顔やほかの場所も隠せますか？": "Can I hide faces or other things too?",
+  "「手動で隠す」で囲めば、顔や名前など、どこでも隠せます。": "Yes. Draw a box with “Hide by hand” to cover faces, names or anything else.",
+  "写真がアップロードされることはありますか？": "Are my photos uploaded?",
+  "ありません。処理はすべてお使いの端末の中で行います。": "Never. Everything happens on your device.",
+  "NumberOFF – 写真のナンバープレートを自動で隠す無料Webアプリ": "NumberOFF – a free web app that hides license plates in photos",
   "アップデートしました": "What's new",
   "スマホで縦長の写真を大きく表示": "Portrait photos are shown larger on phones",
   "小さいナンバーも選びやすく、枠もずれない": "Small plates are easier to select, and the box no longer jumps when you select it",
