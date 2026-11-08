@@ -16,6 +16,8 @@ const state = {
   items: [],
   cur: -1,
   sess: null,
+  csess: null,
+  carP: null,
   drag: null,
   dl: null,
   ratio: "",
@@ -37,7 +39,7 @@ const state = {
   dTx: "matte",
   dCl: "auto",
   BC: null,
-  BETA: false,
+  BETA: true,
   dPl: { ...PL0 },
   mprog: 0
 };

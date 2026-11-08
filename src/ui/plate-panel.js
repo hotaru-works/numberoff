@@ -1,4 +1,4 @@
-// ベータ機能：架空ナンバーの設定パネル
+// 架空ナンバーの設定パネル
 import { $ } from "../dom.js";
 import { pushHist } from "../editor/history.js";
 import { draw, rdraw } from "../editor/view.js";
@@ -120,19 +120,8 @@ $("#plAll").onclick = () => {
   ui();
   rdraw();
 };
-$("#betaPl").checked = state.BETA;
-document.body.classList.toggle("beta", state.BETA);
-$("#betaPl").onchange = (e) => {
-  state.BETA = e.target.checked;
-  try {
-    localStorage.setItem("nk_beta", state.BETA ? "1" : "0");
-  } catch (_) {
-  }
-  document.body.classList.toggle("beta", state.BETA);
-  if (!state.BETA && state.panel == "pl") state.panel = "";
-  ui();
-  draw();
-};
+// the fictional plate tool is a regular feature now (it used to be behind a beta switch)
+document.body.classList.add("beta");
 export {
   plUI
 };

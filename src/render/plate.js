@@ -1,4 +1,4 @@
-// 塗りの質感、ベータ機能の架空ナンバー
+// 塗りの質感、架空ナンバー
 import { PL0 } from "../config.js";
 import { homog } from "../geometry.js";
 import { state } from "../state.js";
@@ -8,7 +8,6 @@ const isRealPlace = (s) => {
   return !!t && REAL_PLACES.some((n) => t.includes(n));
 };
 try {
-  state.BETA = localStorage.getItem("nk_beta") == "1";
   const o = JSON.parse(localStorage.getItem("nk_pl") || "null");
   if (o && typeof o == "object") {
     // values come from storage: keep only known keys with short string values

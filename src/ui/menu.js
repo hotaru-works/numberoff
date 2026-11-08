@@ -1,4 +1,4 @@
-// 「…」メニュー（言語・画質・形式・ベータ機能）
+// 「…」メニュー（言語・画質・形式）
 import { QL } from "../config.js";
 import { mst } from "../detect/model.js";
 import { $ } from "../dom.js";

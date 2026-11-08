@@ -49,6 +49,8 @@ ${Object.entries(SECURITY)
   Cache-Control: public, max-age=86400
 /model.onnx
   Cache-Control: public, max-age=86400
+/car.onnx
+  Cache-Control: public, max-age=86400
 /sw.js
   Cache-Control: no-cache
 `;
@@ -147,6 +149,9 @@ function numberoff() {
       const model = join(outDir, "model.onnx");
       if (!existsSync(model)) this.warn("public/model.onnx not found - auto detection will be off");
       else if (statSync(model).size > MAX_FILE) throw new Error("model.onnx exceeds the 25 MiB Cloudflare Pages limit");
+      // vehicle model (optional): used to crop each car and search it again for a plate
+      const car = join(outDir, "car.onnx");
+      if (!existsSync(car)) this.warn("public/car.onnx not found - plates are searched without the vehicle step");
 
       // 3. security and cache headers
       writeFileSync(join(outDir, "_headers"), HEADERS);
@@ -156,9 +161,10 @@ function numberoff() {
       const hash = createHash("sha256").update(readFileSync(join(outDir, "index.html")));
       for (const a of assets) hash.update(a);
       if (existsSync(model)) hash.update(readFileSync(model));
+      if (existsSync(car)) hash.update(readFileSync(car));
       for (const f of ort) hash.update(readFileSync(join(outDir, "ort", f)));
       // files the service worker keeps for offline use: the model and the runtime
-      const heavy = [...(existsSync(model) ? ["model.onnx"] : []), ...ort.map((f) => `ort/${f}`)];
+      const heavy = [...(existsSync(model) ? ["model.onnx"] : []), ...(existsSync(car) ? ["car.onnx"] : []), ...ort.map((f) => `ort/${f}`)];
       const ver = hash.digest("hex").slice(0, 10);
       const sw = join(outDir, "sw.js");
       writeFileSync(
