@@ -35,6 +35,8 @@ function draw() {
   }
   // resolution of the canvas: more pixels as the zoom grows (in steps, so a pinch does not reallocate it every frame)
   const uz = UZ(), PV = Math.min(4096, Math.max(1800, cv.parentElement.clientWidth * (devicePixelRatio || 1) * (state.z > 3 ? 4 : state.z > 1.3 ? 2 : 1))), s = Math.min(1, PV / Math.max(it.bmp.width, it.bmp.height)), bx = paint(it, cv, s, state.sel), g = cv.getContext("2d"), lw = Math.max(2, cv.width / 300);
+  // another photo's shape: the viewer's height follows the canvas, which has only now taken the new shape, so place the photo again
+  if (cv.parentElement.clientHeight != apply.h) apply();
   const q0 = uz * Math.max(0.8, 1 / Math.sqrt(state.z)) / (cv.getBoundingClientRect().width / cv.width || 1);
   if (state.peek) {
     paint({ bmp: it.bmp, boxes: [] }, cv, s, -1, false);
@@ -211,6 +213,7 @@ function rdraw() {
 function apply() {
   const v = cv.parentElement, w = v.clientWidth, h = v.clientHeight, it = state.items[state.cur], C = cropView(), zm = zMin();
   if (!it || !it.bmp) return;
+  apply.h = h;
   state.z = Math.min(8 * zm, Math.max(zm, state.z));
   // keep the shown area (the crop, or the whole photo) inside the viewer; centre it when it is smaller
   // (it is smaller only in full screen, where the viewer is as tall as the screen)

@@ -287,8 +287,10 @@ function colorOK(bmp, b) {
   }
   return !(sat > 0.55 && (hue < 28 || hue > 320) || sat > 0.7 && hue > 190 && hue < 270);
 }
-function digitsOK(bmp, b) {
-  if (b.w < 36) return true;
+// loose: for a confident candidate on a car; the plate's frame is trimmed off and two characters in a row are enough
+function digitsOK(bmp, b0, loose = false) {
+  if (b0.w < 36) return !loose;
+  const b = loose ? { x: b0.x + b0.w * 0.05, y: b0.y + b0.h * 0.08, w: b0.w * 0.9, h: b0.h * 0.84 } : b0, [lo, hi, wm, need] = loose ? [0.12, 0.8, 0.4, 2] : [0.2, 0.7, 0.35, 3];
   const x = Math.max(0, Math.floor(b.x)), y = Math.max(0, Math.floor(b.y)), bw0 = Math.min(bmp.width - x, Math.ceil(b.w)), bh0 = Math.min(bmp.height - y, Math.ceil(b.h));
   if (bw0 < 8 || bh0 < 6) return false;
   const w = 200, h = Math.max(8, Math.round(bh0 * 200 / bw0)), N = w * h, c = document.createElement("canvas");
@@ -339,7 +341,7 @@ function digitsOK(bmp, b) {
       }
     }
     const bh = My - my + 1, bw = Mx - mx + 1;
-    if (bh > 0.2 * h && bh < 0.7 * h && bw < 0.35 * w && mx > 0 && my > 0 && Mx < w - 1 && My < h - 1) bl.push([(my + My) / 2, bh]);
+    if (bh > lo * h && bh < hi * h && bw < wm * w && mx > 0 && my > 0 && Mx < w - 1 && My < h - 1) bl.push([(my + My) / 2, bh]);
   }
   let al = 0;
   for (const [cy, hh] of bl) {
@@ -347,10 +349,11 @@ function digitsOK(bmp, b) {
     for (const [c2, h2] of bl) if (Math.abs(c2 - cy) < 0.12 * h && h2 / hh > 0.7 && h2 / hh < 1.4) k++;
     al = Math.max(al, k);
   }
-  return al >= 3;
+  return al >= need;
 }
-// a candidate this confident and on a car is kept even when its digits cannot be counted (small, angled or blurred plates)
-const SURE = 0.6;
+// on a car, a candidate this confident is kept even when its digits cannot be counted (small, angled or blurred plates);
+// a less confident one needs at least two characters in a row (headlights and windows have none)
+const SURE = 0.67, MAYBE = 0.55;
 function tilesOf(W, H) {
   const T = Math.max(1e3, Math.sqrt(W * H / 12)), nx = Math.ceil(W / T), ny = Math.ceil(H / T);
   if (nx * ny <= 1) return [];
@@ -439,7 +442,7 @@ async function detect(it) {
       if (!q && r !== b) q = plateFit(bmp, b);
       if (q) {
         if (colorOK(bmp, bbq(q))) ref.push({ q, s: b.s });
-      } else if (b.s >= 0.45 && (r.w / r.h >= 0.7 || onCar(r)) && r.w / r.h >= 0.4 && r.w / r.h <= 4.5 && colorOK(bmp, r) && (b.s >= SURE && onCar(r) || digitsOK(bmp, r))) ref.push(r);
+      } else if (b.s >= 0.45 && (r.w / r.h >= 0.7 || onCar(r)) && r.w / r.h >= 0.4 && r.w / r.h <= 4.5 && colorOK(bmp, r) && (onCar(r) && (b.s >= SURE || b.s >= MAYBE && digitsOK(bmp, r, true)) || digitsOK(bmp, r))) ref.push(r);
     }
     const fq = ref.filter((r) => r.q).sort((a, b) => b.s - a.s), fit = [];
     for (const f of fq) {
