@@ -6,6 +6,8 @@ Object.assign(EN, {
   "開発者": "Developer",
   "プライバシーポリシー": "Privacy policy",
   "このアプリを教える": "Share this app",
+  "車の写真のナンバー消しに使えますか？": "Can I use it to remove plates from car photos?",
+  "はい。SNS投稿・ブログ・フリマや中古車の出品写真など、車の写真のナンバー隠し・ナンバー消しに使えます。": "Yes. Use it for social posts, blogs, marketplace listings and used-car photos.",
   "ぼかしやモザイクとの違いは？": "How is this different from blurring or pixelating?",
   "弱いぼかしやモザイクは、文字が読み取れてしまうことがあります。NumberOFF は塗りで隠すので、元の文字は残りません。": "A light blur or pixelation can sometimes still be read. NumberOFF paints over the plate, so the original characters are gone.",
   "人の顔やほかの場所も隠せますか？": "Can I hide faces or other things too?",
@@ -27,8 +29,8 @@ Object.assign(EN, {
   "次のナンバー": "Next plate",
   "ほかと同じにする": "Same as the others",
   "NumberOFFについて": "About NumberOFF",
-  "写真のナンバープレートを、自動で隠す無料Webアプリ": "A free web app that hides license plates in your photos",
-  "NumberOFF（ナンバーオフ）は、車の写真に写ったナンバープレートをAIで見つけて塗りつぶすWebアプリです。ぼかしやモザイクの代わりに、写真になじむ塗りでナンバーを消せます。イベントやSNSに写真を投稿する前に、ブラウザだけで使えます。登録やインストールはいりません。":
+  "写真のナンバー隠しを自動で。無料のWebアプリ": "A free web app that hides license plates in your photos",
+  "NumberOFF（ナンバーオフ）は、車の写真のナンバー隠しが自動でできるWebアプリです。写真に写ったナンバープレートをAIで見つけて塗りつぶします。ぼかしやモザイクの代わりに、写真になじむ塗りでナンバーを消せます。イベントやSNSに写真を投稿する前に、ブラウザだけで使えます。登録やインストールはいりません。":
     "NumberOFF finds the license plates in your car photos with AI and covers them up – a natural-looking alternative to blurring or pixelating plates. Use it in your browser before posting photos from events or to social media. No sign-up or installation needed.",
   "できること": "What it does",
   "自動で検出": "Automatic detection",
@@ -65,7 +67,7 @@ const tr = (k, p) => {
 const T0 = /* @__PURE__ */ new WeakMap();
 const A0 = /* @__PURE__ */ new WeakMap();
 // (on the English page /en/ the HTML title is English, so the Japanese one is written out here)
-const TITLE0 = "NumberOFF（ナンバーオフ）｜写真のナンバープレートを自動で隠す無料Webアプリ";
+const TITLE0 = "NumberOFF（ナンバーオフ）｜ナンバー隠しアプリ・写真のナンバープレートを自動で隠す（無料）";
 const EN_TITLE = "NumberOFF – Hide or blur license plates in photos automatically (free web app)";
 function i18n() {
   document.documentElement.lang = state.LANG;

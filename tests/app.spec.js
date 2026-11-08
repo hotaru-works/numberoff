@@ -197,7 +197,7 @@ test("search and share information is in the page", async ({ page, request }) =>
 test.describe("search engine crawler", () => {
   test.use({ locale: "en-US", userAgent: "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)" });
   test("sees the Japanese page", async ({ page }) => {
-    await expect(page).toHaveTitle("NumberOFF（ナンバーオフ）｜写真のナンバープレートを自動で隠す無料Webアプリ");
+    await expect(page).toHaveTitle("NumberOFF（ナンバーオフ）｜ナンバー隠しアプリ・写真のナンバープレートを自動で隠す（無料）");
     await expect(page.locator("html")).toHaveAttribute("lang", "ja");
   });
 });
