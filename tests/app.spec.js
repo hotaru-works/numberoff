@@ -187,7 +187,7 @@ test("search and share information is in the page", async ({ page, request }) =>
   // folded by default: the text is in the HTML for search engines, the start screen stays quiet
   await expect(page.locator("#about summary")).toBeVisible();
   await expect(page.locator("#about h2")).toBeHidden();
-  await expect(page.locator("#about h2")).toHaveText("写真のナンバー隠しを自動で。無料のWebアプリ");
+  await expect(page.locator("#about h2")).toHaveText("ナンバー隠し・ナンバープレート隠しを自動で。無料のWebアプリ");
   // the introduction is only on the start screen
   await page.click("#obSkip");
   await page.setInputFiles("#pick", CAR);
