@@ -187,7 +187,7 @@ test("search and share information is in the page", async ({ page, request }) =>
   // folded by default: the text is in the HTML for search engines, the start screen stays quiet
   await expect(page.locator("#about summary")).toBeVisible();
   await expect(page.locator("#about h2")).toBeHidden();
-  await expect(page.locator("#about h2")).toHaveText("写真のナンバープレートを、自動で隠す無料Webアプリ");
+  await expect(page.locator("#about h2")).toHaveText("ナンバー隠し・ナンバープレート隠しを自動で。無料のWebアプリ");
   // the introduction is only on the start screen
   await page.click("#obSkip");
   await page.setInputFiles("#pick", CAR);
@@ -197,7 +197,7 @@ test("search and share information is in the page", async ({ page, request }) =>
 test.describe("search engine crawler", () => {
   test.use({ locale: "en-US", userAgent: "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)" });
   test("sees the Japanese page", async ({ page }) => {
-    await expect(page).toHaveTitle("NumberOFF（ナンバーオフ）｜写真のナンバープレートを自動で隠す無料Webアプリ");
+    await expect(page).toHaveTitle("NumberOFF（ナンバーオフ）｜ナンバー隠しアプリ・写真のナンバープレートを自動で隠す（無料）");
     await expect(page.locator("html")).toHaveAttribute("lang", "ja");
   });
 });
