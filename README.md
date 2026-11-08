@@ -47,7 +47,7 @@ src/
     plates.js           検出結果の整形（タイル分割、プレート形状への補正、誤検知の除外）
   render/
     paint.js            画像と塗りの描画・切り抜き
-    plate.js            塗りの質感、ベータ機能の架空ナンバー
+    plate.js            塗りの質感、架空ナンバー
   editor/
     view.js             表示・ズーム
     pointer.js          タップ・ドラッグ・ピンチ操作

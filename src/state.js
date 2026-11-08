@@ -39,7 +39,7 @@ const state = {
   dTx: "matte",
   dCl: "auto",
   BC: null,
-  BETA: false,
+  BETA: true,
   dPl: { ...PL0 },
   mprog: 0
 };
