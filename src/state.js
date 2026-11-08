@@ -16,6 +16,8 @@ const state = {
   items: [],
   cur: -1,
   sess: null,
+  csess: null,
+  carP: null,
   drag: null,
   dl: null,
   ratio: "",

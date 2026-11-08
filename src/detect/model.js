@@ -15,7 +15,10 @@ function infer(...a) {
   });
   return p;
 }
-async function infer0(bmp, sx, sy, sw, sh, th = TH) {
+// car: use the vehicle model (COCO) and keep only car / motorcycle / bus / truck
+const CARS = [2, 3, 5, 7];
+async function infer0(bmp, sx, sy, sw, sh, th = TH, car = false) {
+  const sess = car ? state.csess : state.sess;
   const S = 640, r = Math.min(S / sw, S / sh), w = Math.round(sw * r), h = Math.round(sh * r);
   if (!IB) {
     const c = document.createElement("canvas");
@@ -32,10 +35,11 @@ async function infer0(bmp, sx, sy, sw, sh, th = TH) {
     t[P + i] = d[i * 4 + 1] / 255;
     t[2 * P + i] = d[i * 4 + 2] / 255;
   }
-  const o = await state.sess.run({ [state.sess.inputNames[0]]: new ort.Tensor("float32", t, [1, 3, S, S]) }), out = o[state.sess.outputNames[0]], N = out.dims[2], nc = out.dims[1] - 4, a = out.data, res = [];
+  const o = await sess.run({ [sess.inputNames[0]]: new ort.Tensor("float32", t, [1, 3, S, S]) }), out = o[sess.outputNames[0]], N = out.dims[2], nc = out.dims[1] - 4, a = out.data, res = [];
   for (let i = 0; i < N; i++) {
     let s = 0;
-    for (let k = 0; k < nc; k++) s = Math.max(s, a[(4 + k) * N + i]);
+    if (car) for (const k of CARS) s = Math.max(s, a[(4 + k) * N + i]);
+    else for (let k = 0; k < nc; k++) s = Math.max(s, a[(4 + k) * N + i]);
     if (s < th) continue;
     const cx = a[i], cy = a[N + i], bw = a[2 * N + i], bh = a[3 * N + i];
     res.push({ x: sx + (cx - bw / 2) / r, y: sy + (cy - bh / 2) / r, w: bw / r, h: bh / r, s });
@@ -101,6 +105,8 @@ const WASM = "/ort/ort-wasm-simd-threaded.wasm";
       state.mprog = Math.min(0.85, 0.02 + 0.83 * (pr.m[0] + pr.w[0]) / (pr.m[1] + pr.w[1]));
       loadUI();
     };
+    // vehicle model: fetched alongside; detection uses it once it is ready (optional, never blocks)
+    state.carP = fetch("/car.onnx", { cache: "no-cache" }).then((r) => r.ok ? r.arrayBuffer() : null).catch(() => null);
     const wasmP = bytes(WASM, { cache: "no-cache" }, prog("w")).catch(() => null);
     const b = await bytes("/model.onnx", { cache: "no-cache" }, prog("m"));
     if (!b) {
@@ -118,6 +124,7 @@ const WASM = "/ort/ort-wasm-simd-threaded.wasm";
     await ortP;
     if (wb && wb.length > 1e5 && wb[0] == 0 && wb[1] == 0x61) ort.env.wasm.wasmBinary = wb;
     state.sess = await ort.InferenceSession.create(b, { executionProviders: ["wasm"] });
+    state.carP = state.carP.then((cb) => cb && cb.byteLength > 1e5 ? ort.InferenceSession.create(new Uint8Array(cb), { executionProviders: ["wasm"] }) : null).then((s) => state.csess = s).catch(() => null);
     state.mstate = "on";
     state.mprog = 1;
     mst("on", `${(b.length / 1048576).toFixed(1)}MB`);

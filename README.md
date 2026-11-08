@@ -76,6 +76,10 @@ vite.config.js          ビルド設定（下記）
 現在は [morsetechlab/yolov11-license-plate-detection](https://huggingface.co/morsetechlab/yolov11-license-plate-detection) の
 `license-plate-finetune-v1n.onnx`（約10.5MB）を `model.onnx` に改名して使用しています。
 
+`public/car.onnx` は車を見つけるモデルです（Ultralytics YOLO11n、COCO学習済み、ONNX・入力 640×640）。
+写真の中の車を先に見つけ、車ごとに切り抜いてもう一度プレートを探すことで、遠くのプレートや斜めのプレートを見つけやすくしています。
+このファイルがない場合は、この手順を飛ばして今までどおり検出します。
+
 ## 公開（Cloudflare Pages）
 
 - ルートディレクトリ: （空欄）

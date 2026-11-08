@@ -349,12 +349,29 @@ function digitsOK(bmp, b) {
   }
   return al >= 3;
 }
+// a candidate this confident and on a car is kept even when its digits cannot be counted (small, angled or blurred plates)
+const SURE = 0.6;
 function tilesOf(W, H) {
   const T = Math.max(1e3, Math.sqrt(W * H / 12)), nx = Math.ceil(W / T), ny = Math.ceil(H / T);
   if (nx * ny <= 1) return [];
   const tw = Math.min(W, Math.ceil(W / nx * 1.25)), th = Math.min(H, Math.ceil(H / ny * 1.25)), o = [];
   for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) o.push([nx == 1 ? 0 : Math.round(i * (W - tw) / (nx - 1)), ny == 1 ? 0 : Math.round(j * (H - th) / (ny - 1)), tw, th]);
   return o;
+}
+// vehicles first: each car is cropped and searched again, so a far-away plate gets many more pixels
+async function carCrops(bmp) {
+  if (state.carP) await state.carP;
+  if (!state.csess) return { crops: [], cars: [] };
+  const W = bmp.width, H = bmp.height, M = Math.max(W, H);
+  const cs = (await infer(bmp, 0, 0, W, H, 0.3, true)).sort((a, b) => b.s - a.s), o = [];
+  for (const c of cs) {
+    const ex = Math.max(c.w, c.h) * 0.1, x0 = Math.max(0, c.x - ex), y0 = Math.max(0, c.y - ex), x1 = Math.min(W, c.x + c.w + ex), y1 = Math.min(H, c.y + c.h + ex);
+    const w = x1 - x0, h = y1 - y0;
+    if (Math.min(c.w, c.h) < 24 || M / Math.max(w, h) < 1.5) continue;
+    o.push([x0, y0, w, h]);
+    if (o.length >= 10) break;
+  }
+  return { crops: o, cars: cs };
 }
 function fitAll(bmp, rs, prior) {
   const fit = [], rest = [];
@@ -408,6 +425,10 @@ async function detect(it) {
       await yd();
       c = c.concat(await infer(bmp, ...T[k], 0.25));
     }
+    const { crops, cars } = await carCrops(bmp);
+    for (const r of crops) c = c.concat(await infer(bmp, ...r, 0.25));
+    // on a car: the plate's center lies inside a detected vehicle
+    const onCar = (r) => cars.some((v) => r.x + r.w / 2 > v.x && r.x + r.w / 2 < v.x + v.w && r.y + r.h / 2 > v.y && r.y + r.h / 2 < v.y + v.h);
     const cc = nms(c, 0.4), ref = [];
     let kk = 0;
     for (const b of cc) {
@@ -418,7 +439,7 @@ async function detect(it) {
       if (!q && r !== b) q = plateFit(bmp, b);
       if (q) {
         if (colorOK(bmp, bbq(q))) ref.push({ q, s: b.s });
-      } else if (b.s >= 0.45 && r.w / r.h >= 0.7 && r.w / r.h <= 4.5 && colorOK(bmp, r) && digitsOK(bmp, r)) ref.push(r);
+      } else if (b.s >= 0.45 && (r.w / r.h >= 0.7 || onCar(r)) && r.w / r.h >= 0.4 && r.w / r.h <= 4.5 && colorOK(bmp, r) && (b.s >= SURE && onCar(r) || digitsOK(bmp, r))) ref.push(r);
     }
     const fq = ref.filter((r) => r.q).sort((a, b) => b.s - a.s), fit = [];
     for (const f of fq) {
@@ -438,6 +459,7 @@ async function detect(it) {
   }
 }
 export {
+  carCrops,
   detect,
   fitAll,
   priorOf
