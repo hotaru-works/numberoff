@@ -5,6 +5,8 @@ import { bbq, knob, mids } from "../geometry.js";
 import { tr } from "../i18n.js";
 import { crop, paint } from "../render/paint.js";
 import { state } from "../state.js";
+// selection frame and handles (hotaruWorks green, readable on bright and dark photos)
+const SEL = "#5f9a12";
 // After a size (ratio) is chosen and the size panel is closed, editing shows only the cropped area.
 // The canvas still holds the whole photo; the viewer is cut to the crop's shape and zoom/pan are kept inside it.
 function cropView() {
@@ -56,7 +58,7 @@ function draw() {
     g.lineWidth = 5 * q;
     path();
     g.stroke();
-    g.strokeStyle = "#2f6bff";
+    g.strokeStyle = SEL;
     g.lineWidth = 2.5 * q;
     path();
     g.stroke();
@@ -68,9 +70,9 @@ function draw() {
       g.rotate(ang);
       g.beginPath();
       g.roundRect(-13 * q, -4.5 * q, 26 * q, 9 * q, 4.5 * q);
-      g.fillStyle = i == ae ? "#2f6bff" : "#fff";
+      g.fillStyle = i == ae ? SEL : "#fff";
       g.fill();
-      g.strokeStyle = "#2f6bff";
+      g.strokeStyle = SEL;
       g.lineWidth = 2 * q;
       g.stroke();
       g.restore();
@@ -84,17 +86,17 @@ function draw() {
       g.moveTo(...K.M);
       g.lineTo(...K.H);
       g.stroke();
-      g.strokeStyle = "#2f6bff";
+      g.strokeStyle = SEL;
       g.lineWidth = 2 * q;
       g.stroke();
       g.beginPath();
       g.arc(K.H[0], K.H[1], 11 * q, 0, 7);
-      g.fillStyle = on ? "#2f6bff" : "#fff";
+      g.fillStyle = on ? SEL : "#fff";
       g.fill();
-      g.strokeStyle = "#2f6bff";
+      g.strokeStyle = SEL;
       g.lineWidth = 2.5 * q;
       g.stroke();
-      g.strokeStyle = on ? "#fff" : "#2f6bff";
+      g.strokeStyle = on ? "#fff" : SEL;
       g.lineWidth = 1.8 * q;
       g.beginPath();
       g.arc(K.H[0], K.H[1], 5.5 * q, -2.6, 1.3);
@@ -113,17 +115,17 @@ function draw() {
         g.arc(a, b, 12 * q, 0, 7);
         g.fillStyle = "#fff";
         g.fill();
-        g.strokeStyle = "#2f6bff";
+        g.strokeStyle = SEL;
         g.lineWidth = 4 * q;
         g.stroke();
         g.beginPath();
         g.arc(a, b, 3.5 * q, 0, 7);
-        g.fillStyle = "#2f6bff";
+        g.fillStyle = SEL;
         g.fill();
       } else {
         g.globalAlpha = act >= 0 ? 0.45 : 1;
         g.arc(a, b, 10 * q, 0, 7);
-        g.fillStyle = "#2f6bff";
+        g.fillStyle = SEL;
         g.fill();
         g.strokeStyle = "#fff";
         g.lineWidth = 2 * q;
@@ -139,7 +141,7 @@ function draw() {
       g.fillRect(x, y, w, h);
     }
     g.lineWidth = 2.5 * q0;
-    g.strokeStyle = state.drag.m == "d" ? "#2f6bff" : "#fff";
+    g.strokeStyle = state.drag.m == "d" ? SEL : "#fff";
     g.setLineDash([9 * q0, 6 * q0]);
     g.strokeRect(x, y, w, h);
     g.setLineDash([]);
@@ -196,7 +198,7 @@ function cursorOv() {
   g.beginPath();
   g.arc(T[0], T[1], 11, 0, 7);
   g.stroke();
-  g.strokeStyle = "#2f6bff";
+  g.strokeStyle = SEL;
   g.lineWidth = 2.5;
   g.stroke();
 }
