@@ -17,6 +17,11 @@ NumberOFF includes or uses the following third-party components.
 - License: AGPL-3.0
 - Training data: see the model page for the dataset and its terms.
 
+## Font: Outfit (`src/fonts/`)
+
+- Source: https://github.com/Outfitio/Outfit-Fonts
+- License: SIL Open Font License 1.1 (`src/fonts/OFL.txt`)
+
 ## Vehicle detection model (`car.onnx`)
 
 - Source: Ultralytics YOLO11n pretrained weights (`yolo11n.pt`, release v8.3.0), exported to ONNX (640×640)

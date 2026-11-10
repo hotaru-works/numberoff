@@ -4,6 +4,10 @@ NumberOFF の主な変更点です。書き方は [Keep a Changelog](https://kee
 
 ## [未リリース]
 
+### 変更
+- デザインを開発者ブランド hotaruWorks に合わせた。夜の紺とホタルの黄緑の配色、Outfit の文字（アプリ内に同梱）、光るプレートのロゴとアプリアイコン。ヘッダーとメニューに「by hotaruWorks」
+- SNS で共有したときの画像（og.jpg）とストア用スクリーンショットを新しいデザインに
+
 ### 追加
 - 「車の写真のナンバーの隠し方・消し方」のページ（/guide）。NumberOFF での手順、iPhone・Android の標準機能で隠す方法、ぼかし・モザイクの注意点、よくある質問。紹介文からリンク
 - 紹介文に Windows 版（Microsoft Store）へのリンク
