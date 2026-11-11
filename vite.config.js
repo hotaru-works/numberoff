@@ -103,7 +103,7 @@ function englishPage(html) {
       "Runs on your device only (photos are never uploaded)",
       "Works offline",
     ],
-    author: { "@type": "Person", name: "kaito_camaro5", url: "https://www.instagram.com/kaito_camaro5/" },
+    author: { "@type": "Organization", name: "hotaruWorks", url: "https://hotaruworks.pages.dev/", sameAs: ["https://github.com/hotaru-works", "https://www.instagram.com/kaito_camaro5/"] },
   };
   return html
     .replace('<html lang="ja">', '<html lang="en">')
