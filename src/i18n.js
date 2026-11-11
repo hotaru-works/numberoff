@@ -4,6 +4,7 @@ const EN = { "ここに写真をドロップ": "Drop photos here", "ご利用に
 // スタート画面の下の紹介文
 Object.assign(EN, {
   "開発者": "Developer",
+  "開発者のホームページ（ホタルワークス）": "Developer website",
   "プライバシーポリシー": "Privacy policy",
   "このアプリを教える": "Share this app",
   "車の写真のナンバーの隠し方・消し方（詳しい手順と注意点）": "How to hide plates in car photos (Japanese guide)",
